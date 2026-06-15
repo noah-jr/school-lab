@@ -1,0 +1,48 @@
+import { NextRequest, NextResponse } from "next/server";
+import { runMigrations } from "@/lib/db";
+import { listarTurmas, criarTurma, estatisticasTurmas } from "@/lib/repositories/turmas";
+
+// Garante que as migrações foram aplicadas
+let migrado = false;
+function garantirMigracoes() {
+  if (!migrado) { runMigrations(); migrado = true; }
+}
+
+// GET /api/turmas
+export async function GET(req: NextRequest) {
+  try {
+    garantirMigracoes();
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get("status") ?? undefined;
+    const pagina = Number(searchParams.get("pagina") ?? "1");
+    const porPagina = Number(searchParams.get("por_pagina") ?? "20");
+
+    const { dados, total } = listarTurmas({ status, pagina, porPagina });
+    const stats = estatisticasTurmas();
+
+    return NextResponse.json({
+      data: dados,
+      total,
+      pagina,
+      porPagina,
+      totalPaginas: Math.ceil(total / porPagina),
+      stats,
+    });
+  } catch (err) {
+    console.error("[GET /api/turmas]", err);
+    return NextResponse.json({ erro: "Erro interno do servidor" }, { status: 500 });
+  }
+}
+
+// POST /api/turmas
+export async function POST(req: NextRequest) {
+  try {
+    garantirMigracoes();
+    const body = await req.json();
+    const turma = criarTurma(body);
+    return NextResponse.json({ data: turma, mensagem: "Turma criada com sucesso" }, { status: 201 });
+  } catch (err) {
+    console.error("[POST /api/turmas]", err);
+    return NextResponse.json({ erro: "Erro ao criar turma" }, { status: 500 });
+  }
+}
