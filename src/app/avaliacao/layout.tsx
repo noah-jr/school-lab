@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Avaliação de Estudantes — EAC Lab",
-  description: "Formulário de avaliação de oratória para viajantes de circuito.",
+  title: "Avaliação de Estudantes — School-Lab",
+  description: "Formulário de avaliação institucional.",
 };
 
 export default function AvaliacaoLayout({

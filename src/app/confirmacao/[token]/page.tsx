@@ -1,7 +1,8 @@
 "use client";
 import { use, useCallback, useState } from "react";
-import { CheckCircle, Calendar, Clock, BookOpen, AlertTriangle, User, XCircle } from "lucide-react";
+import { CheckCircle, Calendar, Clock, BookOpen, AlertTriangle, User, XCircle, FileText, History, Star } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Logo } from "@/components/ui/Logo";
 
 // -------------------------------------------------------
 // TIPOS
@@ -196,8 +197,9 @@ export default function ConfirmacaoPublicaPage({
       }
       return res.json() as Promise<{
         data: {
-          estudante: { id: string; nome: string; turma_nome: string; numero_turma: number };
+          estudante: any;
           designacoes: Designacao[];
+          historico: any[];
         };
       }>;
     },
@@ -221,6 +223,7 @@ export default function ConfirmacaoPublicaPage({
 
   const estudante = data?.data.estudante;
   const designacoes = data?.data.designacoes ?? [];
+  const historico = data?.data.historico ?? [];
   const pendentes = designacoes.filter(d => d.status === "pendente");
   const todasRespondidas = designacoes.length > 0 && pendentes.length === 0;
 
@@ -248,21 +251,16 @@ export default function ConfirmacaoPublicaPage({
         zIndex: 10,
         boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
       }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 8, background: "#1e40af",
-          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-        }}>
-          <BookOpen size={18} color="#fff" />
-        </div>
+        <Logo size="sm" showText={false} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontWeight: 800, fontSize: 15, color: "#111827", letterSpacing: "-0.02em" }}>
-            EAC Lab — As Minhas Designações
+            School-Lab — Portal do Aluno
           </div>
         </div>
       </header>
 
       {/* Conteúdo */}
-      <main style={{ maxWidth: 640, margin: "0 auto", padding: "32px 16px" }}>
+      <main style={{ maxWidth: 800, margin: "0 auto", padding: "32px 16px" }}>
 
         {isLoading && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -287,11 +285,11 @@ export default function ConfirmacaoPublicaPage({
         )}
 
         {data && (
-          <>
+          <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
             {/* Boas-vindas */}
             <div style={{
               background: "#fff", borderRadius: 16, border: "1px solid #e5e7eb",
-              padding: "24px", marginBottom: 24,
+              padding: "24px",
               boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
               textAlign: "center"
             }}>
@@ -299,10 +297,10 @@ export default function ConfirmacaoPublicaPage({
                 <User size={28} color="#6b7280" />
               </div>
               <h1 style={{ fontSize: 24, fontWeight: 800, color: "#111827", marginBottom: 8, letterSpacing: "-0.02em" }}>
-                Olá, {estudante?.nome}!
+                Olá, {estudante?.estudante_nome}!
               </h1>
               <p style={{ fontSize: 15, color: "#4b5563", marginBottom: 20 }}>
-                Aqui estão as suas designações para a <strong>{estudante?.numero_turma}ª Turma</strong> da Escola de Anciãos.
+                Bem-vindo ao portal da <strong>{estudante?.numero_turma}ª Turma</strong> da Escola de Anciãos.
               </p>
               
               {pendentes.length > 1 && (
@@ -312,46 +310,138 @@ export default function ConfirmacaoPublicaPage({
                   style={{
                     padding: "12px 24px", borderRadius: 8, background: "#1e40af", color: "#fff",
                     fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer",
-                    display: "inline-flex", alignItems: "center", gap: 8, width: "100%", justifyContent: "center"
+                    display: "inline-flex", alignItems: "center", gap: 8, justifyContent: "center"
                   }}
                 >
-                  <CheckCircle size={18} /> Aceitar Todas as Partes
+                  <CheckCircle size={18} /> Aceitar Todas as Partes Pendentes
                 </button>
               )}
-              {todasRespondidas && (
-                <div style={{ padding: "12px 16px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, color: "#16a34a", fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                  <CheckCircle size={18} /> Todas as suas designações foram respondidas.
+            </div>
+
+            {/* Ficha & Avaliação Grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px" }}>
+              {/* Perfil / Ficha */}
+              <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e5e7eb", padding: "20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#111827", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+                  <FileText size={18} color="#1e40af" /> A Minha Ficha
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, fontSize: 14, color: "#4b5563" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #f3f4f6", paddingBottom: 8 }}>
+                    <span style={{ color: "#6b7280" }}>Privilégio</span>
+                    <span style={{ fontWeight: 600, textTransform: "capitalize", color: "#111827" }}>{estudante?.papel_ministerial?.replace("_", " ")}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #f3f4f6", paddingBottom: 8 }}>
+                    <span style={{ color: "#6b7280" }}>Congregação</span>
+                    <span style={{ fontWeight: 600, color: "#111827", textAlign: "right" }}>{estudante?.congregacao_nome || "N/A"}<br/><span style={{ fontSize: 12, fontWeight: 400, color: "#9ca3af" }}>{estudante?.circuito_codigo ? `Circuito ${estudante.circuito_codigo}` : ""}</span></span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #f3f4f6", paddingBottom: 8 }}>
+                    <span style={{ color: "#6b7280" }}>Idade</span>
+                    <span style={{ fontWeight: 600, color: "#111827" }}>{estudante?.idade ? `${estudante.idade} anos` : "N/A"}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#6b7280" }}>Anos de Batismo</span>
+                    <span style={{ fontWeight: 600, color: "#111827" }}>{estudante?.anos_batismo || "N/A"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Avaliação */}
+              <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e5e7eb", padding: "20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#111827", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+                  <Star size={18} color="#eab308" /> Avaliação do Viajante
+                </h3>
+                {estudante?.avaliado_pelo_viajante === 1 ? (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, height: "130px" }}>
+                    <div style={{ fontSize: 48, fontWeight: 900, color: "#111827", lineHeight: 1 }}>{estudante.nivel_oratoria}</div>
+                    <span style={{ fontSize: 13, color: "#16a34a", background: "#dcfce7", padding: "4px 12px", borderRadius: 99, fontWeight: 600 }}>
+                      Avaliação Concluída
+                    </span>
+                    {estudante.data_avaliacao && (
+                      <span style={{ fontSize: 12, color: "#9ca3af" }}>
+                        em {new Date(estudante.data_avaliacao).toLocaleDateString("pt-PT")}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "130px", textAlign: "center", color: "#6b7280" }}>
+                    <Clock size={32} color="#d1d5db" style={{ marginBottom: 8 }} />
+                    <p style={{ fontSize: 14 }}>Ainda não avaliado pelo<br />Superintendente de Circuito nesta turma.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Designações */}
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <h2 style={{ fontSize: 14, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", paddingLeft: 8 }}>
+                  As suas partes no programa
+                </h2>
+                {todasRespondidas && (
+                  <div style={{ padding: "4px 12px", background: "#f0fdf4", borderRadius: 99, color: "#16a34a", fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                    <CheckCircle size={14} /> Todas respondidas
+                  </div>
+                )}
+              </div>
+              
+              {designacoes.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "48px 24px", color: "#6b7280", background: "#fff", borderRadius: 16, border: "1px solid #e5e7eb" }}>
+                  Ainda não tem nenhuma designação atribuída nesta turma.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {designacoes.map((d) => (
+                    <DesignacaoCard
+                      key={d.designacao_id}
+                      d={d}
+                      onConfirmar={handleConfirmar}
+                      onRecusar={handleRecusar}
+                      isPending={accaoMutacao.isPending}
+                    />
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* Lista de designações */}
-            {designacoes.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "48px 24px", color: "#6b7280" }}>
-                Ainda não tem nenhuma designação atribuída nesta turma.
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <h2 style={{ fontSize: 14, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", paddingLeft: 8 }}>
-                  As suas partes no programa
-                </h2>
-                
-                {designacoes.map((d) => (
-                  <DesignacaoCard
-                    key={d.designacao_id}
-                    d={d}
-                    onConfirmar={handleConfirmar}
-                    onRecusar={handleRecusar}
-                    isPending={accaoMutacao.isPending}
-                  />
-                ))}
-              </div>
-            )}
-
-            <div style={{ marginTop: 40, textAlign: "center", fontSize: 12, color: "#9ca3af" }}>
-              EAC Lab · O seu acesso é seguro e pessoal
+            {/* Histórico */}
+            <div>
+              <h2 style={{ fontSize: 14, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", paddingLeft: 8, marginBottom: 16 }}>
+                <History size={16} style={{ display: "inline", verticalAlign: "text-bottom", marginRight: 6 }} /> O Meu Histórico de Escolas
+              </h2>
+              {historico.length === 0 ? (
+                <div style={{ background: "#fff", borderRadius: 12, padding: "24px", textAlign: "center", color: "#6b7280", border: "1px dashed #d1d5db" }}>
+                  Não existem registos de turmas anteriores.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {historico.map((h: any) => (
+                    <div key={h.id} style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <h4 style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>{h.turma_nome} ({h.numero_turma}ª Turma)</h4>
+                        <div style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>
+                          Ano: {h.data_inicio ? new Date(h.data_inicio).getFullYear() : "N/A"} <span style={{ margin: "0 6px", color: "#d1d5db" }}>|</span> 
+                          Nível obtido: <strong style={{ color: "#111827" }}>{h.nivel_oratoria || "Não classificado"}</strong>
+                        </div>
+                      </div>
+                      <div>
+                        <span style={{ 
+                          padding: "6px 12px", borderRadius: 99, fontSize: 12, fontWeight: 600,
+                          background: h.status === "concluida" ? "#dcfce7" : "#f3f4f6",
+                          color: h.status === "concluida" ? "#16a34a" : "#4b5563"
+                        }}>
+                          {h.status === "concluida" ? "Concluída" : h.status === "activa" ? "Ativa" : "Cancelada"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </>
+
+            <div style={{ marginTop: 24, textAlign: "center", fontSize: 12, color: "#9ca3af" }}>
+              School-Lab · O seu acesso é seguro e pessoal
+            </div>
+          </div>
         )}
       </main>
 

@@ -150,5 +150,30 @@ export function estatisticasTurmas(): {
       SUM(CASE WHEN status = 'rascunho' THEN 1 ELSE 0 END) AS rascunhos
     FROM turmas
   `).get() as { total: number; activas: number; concluidas: number; rascunhos: number };
-  return row;
+  
+  return row || { total: 0, activas: 0, concluidas: 0, rascunhos: 0 };
+}
+
+// -------------------------------------------------------
+// APAGAR TURMA (SOFT DELETE)
+// -------------------------------------------------------
+export function apagarTurma(id: string, utilizadorId?: string): boolean {
+  const db = getDb();
+  const antes = obterTurma(id);
+  if (!antes) return false;
+
+  const agora = new Date().toISOString();
+
+  const apagar = db.transaction(() => {
+    db.prepare(`UPDATE turmas SET status = 'cancelada', actualizado_em = ? WHERE id = ?`)
+      .run(agora, id);
+
+    criarAuditLog({
+      tabela: "turmas", registoId: id, accao: "DELETE",
+      dadosAntes: antes, dadosDepois: { status: "cancelada" }, utilizadorId,
+    });
+  });
+
+  apagar();
+  return true;
 }

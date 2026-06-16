@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import getDb, { runMigrations } from "@/lib/db";
+import getDb from "@/lib/db";
 import { hashPassword, verifyPassword, createSession } from "@/lib/auth";
 import { v4 as uuid } from "uuid";
-
-let migrado = false;
-function garantirMigracoes() {
-  if (!migrado) { runMigrations(); migrado = true; }
-}
+import { registarLog } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   try {
-    garantirMigracoes();
     const body = await req.json();
     const { email, password } = body;
 
@@ -33,17 +28,27 @@ export async function POST(req: NextRequest) {
         `).run(adminId, "Administrador Principal", email, hashPassword(password), "admin");
         utilizador = db.prepare("SELECT * FROM utilizadores WHERE id = ?").get(adminId);
       } else {
+        registarLog({ acao: "Login Falhado", detalhe: `Tentativa de login falhada para o email: ${email}`, severidade: "warning" });
         return NextResponse.json({ erro: "Credenciais inválidas" }, { status: 401 });
       }
     } else if (!utilizador) {
+      registarLog({ acao: "Login Falhado", detalhe: `Tentativa de login falhada para o email: ${email}`, severidade: "warning" });
       return NextResponse.json({ erro: "Credenciais inválidas" }, { status: 401 });
     }
 
     if (!verifyPassword(password, utilizador.senha_hash)) {
+      registarLog({ acao: "Login Falhado", detalhe: `Password incorreta para o utilizador: ${utilizador.nome}`, severidade: "warning", utilizadorId: utilizador.id });
       return NextResponse.json({ erro: "Credenciais inválidas" }, { status: 401 });
     }
 
     const sessionToken = createSession(utilizador.id);
+
+    registarLog({
+      acao: "Login Efetuado",
+      detalhe: `${utilizador.nome} (${utilizador.papel}) iniciou sessão no sistema.`,
+      severidade: "success",
+      utilizadorId: utilizador.id
+    });
 
     const response = NextResponse.json({
       mensagem: "Login bem-sucedido",
@@ -55,13 +60,12 @@ export async function POST(req: NextRequest) {
       }
     }, { status: 200 });
 
-    // Configuração de cookie de sessão segura
     response.cookies.set("eac_session", sessionToken, { 
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7 // 1 semana
+      maxAge: 60 * 60 * 24 * 7
     });
 
     return response;

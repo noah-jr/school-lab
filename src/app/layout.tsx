@@ -5,15 +5,20 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s — EAC Sistema",
-    default: "EAC — Escola para Anciãos de Congregação",
+    template: "%s — School-Lab",
+    default: "School-Lab — Gestão Institucional",
   },
-  description: "Sistema de gestão da Escola para Anciãos de Congregação — turmas, designações e avaliações.",
+  description: "Sistema de gestão institucional — turmas, designações e avaliações.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" }
+    ],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-AO">
+    <html lang="pt-AO" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -22,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <Providers>{children}</Providers>
         <ToastContainer />
       </body>

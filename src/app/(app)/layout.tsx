@@ -10,6 +10,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect("/login");
   }
 
+  if (session.precisa_mudar_senha) {
+    redirect("/mudar-senha");
+  }
+
   return (
     <div className="app-shell">
       <GlobalNotifications />
@@ -18,3 +22,4 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     </div>
   );
 }
+

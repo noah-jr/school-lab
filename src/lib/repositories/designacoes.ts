@@ -59,14 +59,15 @@ export function gerarDesignacoes(turmaId: string, utilizadorId?: string): {
     SELECT * FROM programa_partes WHERE programa_id = ? AND nivel_requerido != 'NULO' ORDER BY ordem ASC
   `).all(turma.programa_id) as Array<{ id: string; nivel_requerido: string; dia_semana: string; numero: number; tipo: string }>;
 
-  // Obter estudantes avaliados com congregação
+  // Obter estudantes avaliados com congregação e circuito
   const estudantes = db.prepare(`
-    SELECT te.id, te.nivel_oratoria, e.congregacao_nome 
+    SELECT te.id, te.nivel_oratoria, e.congregacao_id, c.circuito_id
     FROM turma_estudantes te
     JOIN estudantes e ON te.estudante_id = e.id
+    LEFT JOIN congregacoes c ON e.congregacao_id = c.id
     WHERE te.turma_id = ? AND te.nivel_oratoria IS NOT NULL
     ORDER BY RANDOM()
-  `).all(turmaId) as Array<{ id: string; nivel_oratoria: NivelOratoria; congregacao_nome: string }>;
+  `).all(turmaId) as Array<{ id: string; nivel_oratoria: NivelOratoria; congregacao_id: string; circuito_id: string }>;
 
   if (estudantes.length === 0) {
     return { criadas: 0, naoAtribuidas: partes.length };
@@ -76,39 +77,90 @@ export function gerarDesignacoes(turmaId: string, utilizadorId?: string): {
   let criadas = 0;
   let naoAtribuidas = 0;
 
-  // Rastrear designações por estudante por dia (máx 1 por dia)
-  const desigPorEstudanteDia = new Map<string, Set<string>>();
-  estudantes.forEach((e) => desigPorEstudanteDia.set(e.id, new Set()));
+  // Mapas para rastrear carga
+  const desigGlobais = new Map<string, number>(); // Conta total de partes do estudante
+  const desigPorDia = new Map<string, Set<string>>(); // Evita 2 partes no mesmo dia
+  estudantes.forEach((e) => {
+    desigGlobais.set(e.id, 0);
+    desigPorDia.set(e.id, new Set());
+  });
 
   const inserirDesig = db.prepare(`
     INSERT INTO designacoes (id, turma_id, turma_estudante_id, parte_id, dia_semana, status, criado_em, actualizado_em)
     VALUES (?,?,?,?,?,?,?,?)
   `);
 
+  // Agrupar partes pelo número (para processar partes de grupo juntas)
+  const partesAgrupadas: Record<number, typeof partes> = {};
+  for (const p of partes) {
+    if (!partesAgrupadas[p.numero]) partesAgrupadas[p.numero] = [];
+    partesAgrupadas[p.numero].push(p);
+  }
+
   const transaccao = db.transaction(() => {
-    for (const parte of partes) {
-      const compatíveis = estudantes.filter((est) => {
-        const niveisPermitidos = COMPATIBILIDADE[est.nivel_oratoria] ?? [];
-        const jaTemNesteDia = desigPorEstudanteDia.get(est.id)?.has(parte.dia_semana) ?? false;
-        return niveisPermitidos.includes(parte.nivel_requerido) && !jaTemNesteDia;
-      });
+    for (const numStr of Object.keys(partesAgrupadas)) {
+      const grupoPartes = partesAgrupadas[Number(numStr)];
+      const dia = grupoPartes[0].dia_semana;
+      
+      // Encontrar uma combinação de estudantes (1 por subparte)
+      const comboLocal: string[] = [];
+      let congreBase: string | null = null;
+      let circuitoBase: string | null = null;
+      let falhou = false;
 
-      const qtdeNecessaria = 1;
+      for (const p of grupoPartes) {
+        // Filtrar estudantes compatíveis
+        const compativeis = estudantes.filter(est => {
+          if (comboLocal.includes(est.id)) return false; // Já está no combo
+          if (desigPorDia.get(est.id)?.has(dia)) return false; // Já tem parte neste dia
+          const niveisPermitidos = COMPATIBILIDADE[est.nivel_oratoria] ?? [];
+          return niveisPermitidos.includes(p.nivel_requerido);
+        });
 
-      if (compatíveis.length < qtdeNecessaria) {
-        naoAtribuidas++;
-        continue;
+        if (compativeis.length === 0) {
+          falhou = true;
+          break;
+        }
+
+        // Ordenar os compatíveis por:
+        // 1. Quem tem menos designações globais (Garante que TODOS participam)
+        // 2. Se for grupo, quem é da mesma congregação (Prioridade Forte)
+        // 3. Se for grupo, quem é do mesmo circuito / "congregação vizinha" (Prioridade Secundária)
+        compativeis.sort((a, b) => {
+          const scoreA = (desigGlobais.get(a.id) ?? 0) * 100 
+                         - (congreBase === a.congregacao_id ? 50 : 0)
+                         - (circuitoBase && circuitoBase === a.circuito_id && congreBase !== a.congregacao_id ? 20 : 0);
+          
+          const scoreB = (desigGlobais.get(b.id) ?? 0) * 100 
+                         - (congreBase === b.congregacao_id ? 50 : 0)
+                         - (circuitoBase && circuitoBase === b.circuito_id && congreBase !== b.congregacao_id ? 20 : 0);
+                         
+          return scoreA - scoreB;
+        });
+
+        const escolhido = compativeis[0];
+        comboLocal.push(escolhido.id);
+        if (!congreBase) {
+          congreBase = escolhido.congregacao_id;
+          circuitoBase = escolhido.circuito_id;
+        }
       }
 
-      // 1 estudante (escolher o que tem menos partes)
-      compatíveis.sort((a, b) => (desigPorEstudanteDia.get(a.id)?.size ?? 0) - (desigPorEstudanteDia.get(b.id)?.size ?? 0));
-      const escolhidos = [compatíveis[0]];
-
-      for (const escolhido of escolhidos) {
-        const id = gerarId();
-        inserirDesig.run(id, turmaId, escolhido.id, parte.id, parte.dia_semana, "pendente", agora, agora);
-        desigPorEstudanteDia.get(escolhido.id)!.add(parte.dia_semana);
-        criadas++;
+      if (falhou) {
+        naoAtribuidas += grupoPartes.length;
+      } else {
+        // Sucesso: registrar e gravar
+        for (let i = 0; i < grupoPartes.length; i++) {
+          const p = grupoPartes[i];
+          const estId = comboLocal[i];
+          
+          const id = gerarId();
+          inserirDesig.run(id, turmaId, estId, p.id, p.dia_semana, "pendente", agora, agora);
+          
+          desigPorDia.get(estId)!.add(p.dia_semana);
+          desigGlobais.set(estId, (desigGlobais.get(estId) || 0) + 1);
+          criadas++;
+        }
       }
     }
 

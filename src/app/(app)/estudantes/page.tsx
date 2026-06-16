@@ -1,32 +1,75 @@
 "use client";
 import { PageHeader } from "@/components/layout/Sidebar";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import type { Estudante } from "@/lib/types";
 import { useState } from "react";
-import { Search, Users, Plus } from "lucide-react";
+import { Search, Users, Plus, Edit2, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function EstudantesPage() {
-  const [busca, setBusca] = useState("");
-  const [modalAberto, setModalAberto] = useState(false);
+  const { data: user } = useAuth();
+  const temAcessoCompleto = user?.papel === "admin" || user?.papel === "instrutor";
   const queryClient = useQueryClient();
+  
+  const [busca, setBusca] = useState("");
+  const [filtroCongregacao, setFiltroCongregacao] = useState("todas");
+  const [filtroPapel, setFiltroPapel] = useState("todos");
+  const [filtroTurma, setFiltroTurma] = useState("todas");
+  const [pagina, setPagina] = useState(1);
+  
+  const [modalAberto, setModalAberto] = useState(false);
+
+  const { data: congsReq } = useQuery({
+    queryKey: ["congregacoes"],
+    queryFn: async () => {
+      const res = await api.get("/congregacoes");
+      return res.data.data;
+    }
+  });
+
+  const { data: turmasReq } = useQuery({
+    queryKey: ["turmas_filter"],
+    queryFn: async () => {
+      const res = await api.get("/turmas?por_pagina=1000");
+      return res.data.data;
+    }
+  });
 
   const { data, isLoading } = useQuery({
-    queryKey: ["estudantes", busca],
+    queryKey: ["estudantes", busca, filtroCongregacao, filtroPapel, filtroTurma, pagina],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (busca) params.set("nome", busca);
+      if (filtroCongregacao !== "todas") params.set("congregacao_id", filtroCongregacao);
+      if (filtroPapel !== "todos") params.set("papel_ministerial", filtroPapel);
+      if (filtroTurma !== "todas") params.set("turma_id", filtroTurma);
+      params.set("pagina", pagina.toString());
+      params.set("por_pagina", "15"); // Paginação definida para 15 estudantes por ecrã
       const { data } = await api.get(`/estudantes?${params}`);
-      return data as { data: Estudante[]; total: number; stats: Record<string, number> };
+      return data as { data: Estudante[]; total: number; totalPaginas: number; stats: Record<string, number> };
     },
     staleTime: 30_000,
   });
 
   const [novoEstudante, setNovoEstudante] = useState({
-    nome: "", email_jwpub: "", telefone_principal: "", papel_ministerial: "anciao",
+    nome: "", email_jwpub: "", telefone_principal: "", papel_ministerial: "anciao", fotografia: "",
   });
   const [salvando, setSalvando] = useState(false);
+
+  const eliminarMutacao = useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/estudantes/${id}`);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["estudantes"] }),
+    onError: (err: any) => alert(err.response?.data?.erro || "Erro ao eliminar estudante.")
+  });
+
+  const handleEliminar = (est: any) => {
+    if (!confirm(`Eliminar permanentemente "${est.nome}"?\n\nEsta ação não pode ser desfeita.`)) return;
+    eliminarMutacao.mutate(est.id);
+  };
 
   const handleCriar = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,13 +78,28 @@ export default function EstudantesPage() {
       await api.post("/estudantes", novoEstudante);
       queryClient.invalidateQueries({ queryKey: ["estudantes"] });
       setModalAberto(false);
-      setNovoEstudante({ nome: "", email_jwpub: "", telefone_principal: "", papel_ministerial: "anciao" });
+      setNovoEstudante({ nome: "", email_jwpub: "", telefone_principal: "", papel_ministerial: "anciao", fotografia: "" });
     } catch (err) {
       console.error(err);
     } finally {
       setSalvando(false);
     }
   };
+
+  // Inteligência para corrigir o formato da filial automaticamente: "Apelido, Nome" -> "Nome Apelido"
+  const handleCorrecaoNome = () => {
+    const nomeSujo = novoEstudante.nome;
+    if (nomeSujo.includes(",")) {
+      const partes = nomeSujo.split(",");
+      if (partes.length >= 2) {
+        const apelido = partes[0].trim();
+        const nomeProprio = partes.slice(1).join(" ").trim();
+        setNovoEstudante({ ...novoEstudante, nome: `${nomeProprio} ${apelido}` });
+      }
+    }
+  };
+
+  // Eliminado: exportarCSV (política PDF-only)
 
   return (
     <>
@@ -50,12 +108,16 @@ export default function EstudantesPage() {
         breadcrumb={[{ label: "Estudantes" }]}
         actions={
           <div style={{ display: "flex", gap: "12px" }}>
-            <Link href="/estudantes/importar" className="btn btn-ghost" style={{ border: "1px dashed var(--border)" }}>
-              Importar de Betel
-            </Link>
-            <button className="btn btn-primary" onClick={() => setModalAberto(true)}>
-              <Plus size={14} /> Novo Estudante
-            </button>
+            {temAcessoCompleto && (
+              <>
+                <Link href="/estudantes/importar" className="btn btn-ghost" style={{ border: "1px dashed var(--border)" }}>
+                  Importar de Betel
+                </Link>
+                <button className="btn btn-primary" onClick={() => setModalAberto(true)}>
+                  <Plus size={14} /> Novo Estudante
+                </button>
+              </>
+            )}
           </div>
         }
       />
@@ -85,18 +147,64 @@ export default function EstudantesPage() {
           </div>
         )}
 
-        {/* Busca */}
-        <div className="flex items-center gap-2 mb-6" style={{
+        {/* Barra de Filtros */}
+        <div style={{
           background: "var(--bg-surface)", border: "1px solid var(--border)",
-          borderRadius: "var(--radius)", padding: "0 12px", maxWidth: 360,
+          borderRadius: "var(--radius)", padding: "16px 20px", marginBottom: "24px",
+          display: "flex", gap: "24px", flexWrap: "wrap", alignItems: "center"
         }}>
-          <Search size={14} className="text-muted" />
-          <input
-            style={{ flex: 1, background: "none", border: "none", outline: "none", padding: "9px 0", fontSize: 13, color: "var(--text)" }}
-            placeholder="Pesquisar por nome..."
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-          />
+          <div style={{ flex: "1 1 250px", display: "flex", alignItems: "center", gap: "12px", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: "4px", padding: "0 12px" }}>
+            <Search size={16} className="text-muted" />
+            <input
+              style={{ flex: 1, background: "none", border: "none", outline: "none", padding: "10px 0", fontSize: 13, color: "var(--text)" }}
+              placeholder="Pesquisar por nome..."
+              value={busca}
+              onChange={(e) => { setBusca(e.target.value); setPagina(1); }}
+            />
+          </div>
+
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <label style={{ fontSize: "12px", color: "var(--text-faint)", fontWeight: 600, textTransform: "uppercase" }}>Papel</label>
+              <select 
+                value={filtroPapel}
+                onChange={e => { setFiltroPapel(e.target.value); setPagina(1); }}
+                style={{ padding: "8px 12px", fontSize: "13px", borderRadius: "4px", border: "1px solid var(--border)", background: "var(--bg-elevated)", color: "var(--text)", outline: "none", cursor: "pointer" }}
+              >
+                <option value="todos">Todos os Papéis</option>
+                <option value="anciao">Ancião</option>
+                <option value="servo_ministerial">Servo Ministerial</option>
+              </select>
+            </div>
+
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <label style={{ fontSize: "12px", color: "var(--text-faint)", fontWeight: 600, textTransform: "uppercase" }}>Congregação</label>
+              <select 
+                value={filtroCongregacao}
+                onChange={e => { setFiltroCongregacao(e.target.value); setPagina(1); }}
+                style={{ padding: "8px 12px", fontSize: "13px", borderRadius: "4px", border: "1px solid var(--border)", background: "var(--bg-elevated)", color: "var(--text)", outline: "none", cursor: "pointer", maxWidth: "200px" }}
+              >
+                <option value="todas">Todas as Congregações</option>
+                {congsReq?.map((c: any) => (
+                  <option key={c.id} value={c.id}>{c.nome} / {c.circuito_codigo}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <label style={{ fontSize: "12px", color: "var(--text-faint)", fontWeight: 600, textTransform: "uppercase" }}>Turma</label>
+              <select 
+                value={filtroTurma}
+                onChange={e => { setFiltroTurma(e.target.value); setPagina(1); }}
+                style={{ padding: "8px 12px", fontSize: "13px", borderRadius: "4px", border: "1px solid var(--border)", background: "var(--bg-elevated)", color: "var(--text)", outline: "none", cursor: "pointer", maxWidth: "200px" }}
+              >
+                <option value="todas">Todas as Turmas</option>
+                {turmasReq?.map((t: any) => (
+                  <option key={t.id} value={t.id}>{t.numero_turma}ª - {t.nome}</option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Tabela */}
@@ -121,6 +229,7 @@ export default function EstudantesPage() {
                     <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase" }}>Email JW</th>
                     <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase" }}>Telefone</th>
                     <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase" }}>Papel</th>
+                    {temAcessoCompleto && <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", textAlign: "center" }}>Ações</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -140,10 +249,57 @@ export default function EstudantesPage() {
                           {est.papel_ministerial === "anciao" ? "Ancião" : "Servo Min."}
                         </span>
                       </td>
+                      {temAcessoCompleto && (
+                        <td style={{ textAlign: "center", padding: "8px 16px" }}>
+                          <div style={{ display: "flex", gap: 4, justifyContent: "center" }}>
+                            <Link href={`/estudantes/${est.id}`} className="btn btn-ghost btn-icon" title="Ver Perfil" style={{ width: 28, height: 28, color: "var(--accent)" }}>
+                              <Edit2 size={13} />
+                            </Link>
+                            <button
+                              className="btn btn-ghost btn-icon"
+                              title="Eliminar"
+                              style={{ width: 28, height: 28, color: "var(--danger)" }}
+                              onClick={() => handleEliminar(est)}
+                              disabled={eliminarMutacao.isPending}
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
               </table>
+              
+              {/* Paginação */}
+              {data && data.totalPaginas > 1 && (
+                <div style={{ padding: "16px 24px", borderTop: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--bg-elevated)" }}>
+                  <span style={{ fontSize: "13px", color: "var(--text-muted)", fontWeight: 500 }}>
+                    A mostrar página <span style={{ fontWeight: 600, color: "var(--text)" }}>{pagina}</span> de {data.totalPaginas} 
+                    <span style={{ margin: "0 8px", color: "var(--border)" }}>|</span> 
+                    Total: <span style={{ fontWeight: 600, color: "var(--text)" }}>{data.total}</span> estudantes
+                  </span>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button 
+                      className="btn btn-ghost" 
+                      style={{ padding: "6px 12px", border: "1px solid var(--border)", opacity: pagina === 1 ? 0.5 : 1, cursor: pagina === 1 ? "not-allowed" : "pointer" }}
+                      disabled={pagina === 1} 
+                      onClick={() => setPagina(p => Math.max(1, p - 1))}
+                    >
+                      Anterior
+                    </button>
+                    <button 
+                      className="btn btn-ghost" 
+                      style={{ padding: "6px 12px", border: "1px solid var(--border)", opacity: pagina === data.totalPaginas ? 0.5 : 1, cursor: pagina === data.totalPaginas ? "not-allowed" : "pointer" }}
+                      disabled={pagina === data.totalPaginas} 
+                      onClick={() => setPagina(p => Math.min(data.totalPaginas, p + 1))}
+                    >
+                      Próxima
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -159,8 +315,18 @@ export default function EstudantesPage() {
             <form onSubmit={handleCriar}>
               <div className="modal-body">
                 <div className="form-group">
-                  <label className="form-label">Nome Completo *</label>
-                  <input className="form-input" required value={novoEstudante.nome} onChange={(e) => setNovoEstudante({ ...novoEstudante, nome: e.target.value })} />
+                  <label className="form-label" style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span>Nome Completo *</span>
+                    <span style={{ fontSize: "10px", color: "var(--info)", fontWeight: "normal" }}>Inversão automática de vírgula ativada</span>
+                  </label>
+                  <input 
+                    className="form-input" 
+                    required 
+                    placeholder="Pode colar: Apelido, Nome Próprio"
+                    value={novoEstudante.nome} 
+                    onChange={(e) => setNovoEstudante({ ...novoEstudante, nome: e.target.value })}
+                    onBlur={handleCorrecaoNome}
+                  />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Email JW</label>
@@ -176,6 +342,25 @@ export default function EstudantesPage() {
                     <option value="anciao">Ancião</option>
                     <option value="servo_ministerial">Servo Ministerial</option>
                   </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Fotografia (Opcional)</label>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="form-input" 
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setNovoEstudante({ ...novoEstudante, fotografia: reader.result as string });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }} 
+                  />
+                  {novoEstudante.fotografia && <img src={novoEstudante.fotografia} alt="Preview" style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: '50%', marginTop: 8 }} />}
                 </div>
               </div>
               <div className="modal-footer">

@@ -2,7 +2,7 @@
 // TIPOS CENTRAIS DO DOMÍNIO — EAC Sistema de Gestão
 // -------------------------------------------------------
 
-export type PapelUtilizador = "admin" | "instrutor" | "viajante";
+export type PapelUtilizador = "admin" | "instrutor" | "viajante" | "secretaria";
 export type StatusTurma = "rascunho" | "activa" | "concluida" | "cancelada";
 export type NivelOratoria = "A" | "A+" | "A-" | "B" | "B+" | "B-" | "C" | "C+" | "C-";
 export type NivelRequerido = "A" | "B" | "C" | "A/B" | "B/C" | "A/B/C" | "NULO";
@@ -52,6 +52,7 @@ export interface Estudante {
   congregacao_id?: string;
   congregacao?: Congregacao;
   papel_ministerial: "anciao" | "servo_ministerial";
+  fotografia: string;
   activo: number;
   criado_em: string;
   actualizado_em: string;

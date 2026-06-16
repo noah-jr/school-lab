@@ -41,7 +41,7 @@ export async function getSession() {
   try {
     const db = getDb();
     const session = db.prepare(`
-      SELECT u.id, u.nome, u.email, u.papel, s.expira_em 
+      SELECT u.id, u.nome, u.email, u.papel, u.precisa_mudar_senha, s.expira_em 
       FROM sessoes s
       JOIN utilizadores u ON s.utilizador_id = u.id
       WHERE s.token = ? AND u.activo = 1
@@ -58,7 +58,8 @@ export async function getSession() {
       id: session.id,
       nome: session.nome,
       email: session.email,
-      papel: session.papel
+      papel: session.papel,
+      precisa_mudar_senha: session.precisa_mudar_senha === 1
     };
   } catch (e) {
     return null;

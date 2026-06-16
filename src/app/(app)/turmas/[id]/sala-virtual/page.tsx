@@ -1,6 +1,7 @@
 "use client";
 import { use } from "react";
 import { useTurma } from "@/hooks/useTurmas";
+import { useAuth } from "@/hooks/useAuth";
 import { PageHeader } from "@/components/layout/Sidebar";
 
 export default function SalaVirtualPage({ params }: { params: Promise<{ id: string }> }) {
@@ -10,9 +11,17 @@ export default function SalaVirtualPage({ params }: { params: Promise<{ id: stri
   if (isLoading) return <div style={{ padding: 40, textAlign: "center" }}>A carregar Sala Virtual...</div>;
   if (!turma) return <div style={{ padding: 40, textAlign: "center" }}>Turma não encontrada.</div>;
 
+  const { data: user } = useAuth();
+
   // Criamos um nome de sala único e seguro baseado no ID e nome da turma
   const roomName = `EAC-Lab-${turma.numero_turma}-${id.substring(0, 8)}`;
-  const jitsiUrl = `https://meet.jit.si/${roomName}#config.prejoinPageEnabled=false&interfaceConfig.SHOW_JITSI_WATERMARK=false`;
+  
+  // Parâmetros avançados de segurança e UX para a sala:
+  // - prejoinPageEnabled=true (Ecrã de teste antes de entrar)
+  // - startWithAudioMuted=true (Mudos por defeito)
+  // - userInfo (Preenche logo o nome de quem tem sessão iniciada)
+  const userInfo = user ? `&userInfo.displayName=${encodeURIComponent(user.nome)}` : '';
+  const jitsiUrl = `https://meet.jit.si/${roomName}#config.prejoinPageEnabled=true&config.startWithAudioMuted=true&config.startWithVideoMuted=true&interfaceConfig.SHOW_JITSI_WATERMARK=false${userInfo}`;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>

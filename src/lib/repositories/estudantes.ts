@@ -9,6 +9,8 @@ import crypto from "crypto";
 export function listarEstudantes(filtros?: {
   nome?: string;
   congregacao_id?: string;
+  papel_ministerial?: string;
+  turma_id?: string;
   pagina?: number;
   porPagina?: number;
 }): { dados: Estudante[]; total: number } {
@@ -20,22 +22,34 @@ export function listarEstudantes(filtros?: {
   let where = "WHERE e.activo = 1";
   const params: unknown[] = [];
 
+  let joinTurma = "";
+  if (filtros?.turma_id && filtros.turma_id !== "todas") {
+    joinTurma = "JOIN turma_estudantes te ON e.id = te.estudante_id";
+    where += " AND te.turma_id = ?";
+    params.push(filtros.turma_id);
+  }
+
   if (filtros?.nome) {
     where += " AND e.nome LIKE ?";
     params.push(`%${filtros.nome}%`);
   }
-  if (filtros?.congregacao_id) {
+  if (filtros?.congregacao_id && filtros.congregacao_id !== "todas") {
     where += " AND e.congregacao_id = ?";
     params.push(filtros.congregacao_id);
   }
+  if (filtros?.papel_ministerial && filtros.papel_ministerial !== "todos") {
+    where += " AND e.papel_ministerial = ?";
+    params.push(filtros.papel_ministerial);
+  }
 
   const total = (
-    db.prepare(`SELECT COUNT(*) as c FROM estudantes e ${where}`).get(...params) as { c: number }
+    db.prepare(`SELECT COUNT(*) as c FROM estudantes e ${joinTurma} ${where}`).get(...params) as { c: number }
   ).c;
 
   const dados = db.prepare(`
     SELECT e.*, c.nome AS congregacao_nome, ci.codigo AS circuito_codigo
     FROM estudantes e
+    ${joinTurma}
     LEFT JOIN congregacoes c ON e.congregacao_id = c.id
     LEFT JOIN circuitos ci ON c.circuito_id = ci.id
     ${where}
@@ -75,12 +89,13 @@ export function criarEstudante(
   const inserir = db.transaction(() => {
     db.prepare(`
       INSERT INTO estudantes (id, nome, email_jwpub, telefone_principal, telefone_alternativo,
-        congregacao_id, papel_ministerial, activo, criado_em, actualizado_em)
-      VALUES (?,?,?,?,?,?,?,1,?,?)
+        congregacao_id, papel_ministerial, fotografia, activo, criado_em, actualizado_em)
+      VALUES (?,?,?,?,?,?,?,?,1,?,?)
     `).run(
       id, input.nome, input.email_jwpub ?? null,
       input.telefone_principal ?? null, input.telefone_alternativo ?? null,
       input.congregacao_id ?? null, input.papel_ministerial ?? "anciao",
+      input.fotografia,
       agora, agora
     );
 
@@ -105,7 +120,7 @@ export function actualizarEstudante(
 
   const COLUNAS_PERMITIDAS = [
     "nome", "email_jwpub", "telefone_principal", "telefone_alternativo",
-    "congregacao_id", "papel_ministerial", "activo"
+    "congregacao_id", "papel_ministerial", "fotografia", "activo"
   ];
   const campos = Object.keys(input).filter(k => COLUNAS_PERMITIDAS.includes(k));
   if (campos.length === 0) return antes!;
@@ -242,13 +257,16 @@ export function historicoEstudante(estudanteId: string) {
 export function obterTurmaEstudantePorToken(token: string) {
   const db = getDb();
   return db.prepare(`
-    SELECT te.*, e.nome AS estudante_nome, e.congregacao_id, 
-           t.nome AS turma_nome, t.numero_turma
+    SELECT te.*, e.nome AS estudante_nome, e.congregacao_id, e.papel_ministerial, e.email_jwpub, e.telefone_principal, e.telefone_alternativo, e.fotografia,
+           t.nome AS turma_nome, t.numero_turma,
+           c.nome AS congregacao_nome, ci.codigo AS circuito_codigo
     FROM turma_estudantes te
     JOIN estudantes e ON te.estudante_id = e.id
     JOIN turmas t ON te.turma_id = t.id
+    LEFT JOIN congregacoes c ON e.congregacao_id = c.id
+    LEFT JOIN circuitos ci ON c.circuito_id = ci.id
     WHERE te.token_acesso = ?
-  `).get(token) as (TurmaEstudante & { estudante_nome: string; turma_nome: string; numero_turma: number }) | undefined;
+  `).get(token) as any;
 }
 
 // -------------------------------------------------------
@@ -268,3 +286,26 @@ export function garantirTokensDaTurma(turmaId: string) {
   }
 }
 
+// -------------------------------------------------------
+// APAGAR ESTUDANTE (SOFT DELETE)
+// -------------------------------------------------------
+export function apagarEstudante(id: string, utilizadorId?: string): boolean {
+  const db = getDb();
+  const antes = obterEstudante(id);
+  if (!antes) return false;
+
+  const agora = new Date().toISOString();
+
+  const apagar = db.transaction(() => {
+    db.prepare(`UPDATE estudantes SET activo = 0, actualizado_em = ? WHERE id = ?`)
+      .run(agora, id);
+
+    criarAuditLog({
+      tabela: "estudantes", registoId: id, accao: "DELETE",
+      dadosAntes: antes, dadosDepois: { activo: 0 }, utilizadorId,
+    });
+  });
+
+  apagar();
+  return true;
+}

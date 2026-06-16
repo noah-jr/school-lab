@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/layout/Sidebar";
 import { useTurmaDesignacoes, useTurma, useGerarDesignacoes, useTurmaEstudantes, useAtribuirDesignacao } from "@/hooks/useTurmas";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
-import { ClipboardList, Zap, ShieldAlert } from "lucide-react";
+import { ClipboardList, Zap, ShieldAlert, Printer } from "lucide-react";
 
 const DIAS_DA_SEMANA = ["segunda", "terca", "quarta", "quinta", "sexta"];
 
@@ -17,13 +17,15 @@ export default function TurmaDesignacoesPage({ params }: { params: Promise<{ id:
   const { mutateAsync: gerar, isPending: gerandoDesig } = useGerarDesignacoes(id);
   const { mutateAsync: atribuir, isPending: atribuindo } = useAtribuirDesignacao(id);
 
-  if (!authLoading && user?.papel === "secretaria") {
+  const temAcessoCompleto = user?.papel === "admin" || user?.papel === "instrutor";
+
+  if (!authLoading && !temAcessoCompleto && user?.papel !== "viajante") {
     return (
       <div className="empty-state" style={{ minHeight: "80dvh" }}>
         <ShieldAlert size={48} color="var(--danger)" style={{ opacity: 0.8, marginBottom: 16 }} />
         <p className="empty-title">Acesso Restrito</p>
         <p className="text-muted" style={{ maxWidth: 400, textAlign: "center", marginBottom: 24 }}>
-          O seu perfil de acesso (Secretária) não permite visualizar nem gerar designações. Este painel é exclusivo dos instrutores.
+          O seu perfil de acesso não permite visualizar nem gerar designações. Este painel é exclusivo dos administradores e instrutores.
         </p>
         <Link href={`/turmas/${id}/estudantes`} className="btn btn-primary">Voltar para a Lista de Estudantes</Link>
       </div>
@@ -55,16 +57,23 @@ export default function TurmaDesignacoesPage({ params }: { params: Promise<{ id:
         ]}
         actions={
           <div className="flex gap-2">
-            <button className="btn btn-ghost" onClick={() => window.print()}>
-              🖨️ Exportar PDF
-            </button>
-            <button
-              className={`btn btn-primary ${gerandoDesig ? "btn-loading" : ""}`}
-              onClick={() => gerar()}
-              disabled={gerandoDesig}
-            >
-              <Zap size={14} /> {gerandoDesig ? "A gerar..." : "Gerar Automaticamente"}
-            </button>
+            <Link href={`/preview-pdf?url=/api/turmas/${id}/relatorios/designacoes/pdf&title=Designa%C3%A7%C3%B5es%20da%20Turma&back=/turmas/${id}/designacoes`} className="btn btn-ghost">
+              <Printer size={16} /> Exportar PDF
+            </Link>
+            {temAcessoCompleto && (
+              <>
+                <Link href={`/turmas/${id}/designacoes/manual`} className="btn btn-ghost" style={{ border: "1px dashed var(--border)" }}>
+                  Atribuição Rápida
+                </Link>
+                <button
+                  className={`btn btn-primary ${gerandoDesig ? "btn-loading" : ""}`}
+                  onClick={() => gerar()}
+                  disabled={gerandoDesig}
+                >
+                  <Zap size={14} /> {gerandoDesig ? "A gerar..." : "Gerar Automaticamente"}
+                </button>
+              </>
+            )}
           </div>
         }
       />
@@ -117,7 +126,7 @@ export default function TurmaDesignacoesPage({ params }: { params: Promise<{ id:
                                 style={{ padding: "6px 8px", fontSize: 13, borderColor: d.designacao_id ? "transparent" : "var(--danger)" }}
                                 value={d.turma_estudante_id ?? ""}
                                 onChange={(e) => handleSelectEstudante(d.parte_id, dia, e.target.value)}
-                                disabled={atribuindo}
+                                disabled={!temAcessoCompleto || atribuindo}
                               >
                                 <option value="">-- Por atribuir --</option>
                                 {estudantes?.map(est => (

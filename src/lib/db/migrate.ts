@@ -1,5 +1,5 @@
 import { runMigrations } from "./index";
 
-console.log("🚀 A aplicar migrações...");
+console.log("[START] A aplicar migrações...");
 runMigrations();
-console.log("✅ Migrações concluídas.");
+console.log("[SUCESSO] Migrações concluídas.");

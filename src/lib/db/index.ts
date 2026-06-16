@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import fs from "fs";
+import fs from "fs"; 
 import path from "path";
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -13,6 +13,7 @@ if (!fs.existsSync(DATA_DIR)) {
 
 // Instância singleton da DB
 let _db: Database.Database | null = null;
+let _migrationsRun = false;
 
 export function getDb(): Database.Database {
   if (_db) return _db;
@@ -26,6 +27,11 @@ export function getDb(): Database.Database {
   _db.pragma("foreign_keys = ON");
   _db.pragma("synchronous = NORMAL");
   _db.pragma("cache_size = -64000"); // 64MB cache
+
+  if (!_migrationsRun) {
+    _migrationsRun = true;
+    runMigrations();
+  }
 
   return _db;
 }
@@ -69,7 +75,16 @@ export function runMigrations(): void {
 
     try {
       aplicar();
-      console.log(`✅ Migração aplicada: ${ficheiro}`);
+      console.log(`[SUCESSO] Migração aplicada: ${ficheiro}`);
+    } catch (err: any) {
+      // Se a coluna já existe (corrida entre processos ou restart), marcar como aplicada
+      if (err?.message?.includes('duplicate column name') || err?.message?.includes('already exists')) {
+        console.warn(`[AVISO] ${ficheiro}: objecto já existe, a marcar como aplicada.`);
+        try { db.prepare("INSERT OR IGNORE INTO _migrations (ficheiro) VALUES (?)").run(ficheiro); } catch {}
+      } else {
+        console.error(`[ERRO] Migração ${ficheiro} falhou:`, err);
+        // Não relançar — não bloquear o servidor por uma migração falhada
+      }
     } finally {
       db.pragma("foreign_keys = ON");
     }

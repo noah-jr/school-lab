@@ -10,11 +10,11 @@ import { useState, useMemo } from "react";
 
 function StatCard({ label, value, sub, accent, icon: Icon }: { label: string; value: string | number; sub?: string; accent: string; icon: any }) {
   return (
-    <div style={{ 
-      padding: "20px", 
-      background: "var(--bg-surface)", 
-      border: "1px solid var(--border)", 
-      borderRadius: "4px", 
+    <div style={{
+      padding: "20px",
+      background: "var(--bg-surface)",
+      border: "1px solid var(--border)",
+      borderRadius: "4px",
       display: "flex",
       flexDirection: "column",
       position: "relative"
@@ -78,7 +78,7 @@ function ModuleCard({ title, desc, icon: Icon, href, actionLabel }: { title: str
 
 function AnalyticalBarChart({ data }: { data: { label: string, current: number, previous: number }[] }) {
   const maxVal = Math.max(...data.map(d => Math.max(d.current, d.previous)), 10);
-  
+
   return (
     <div style={{ width: "100%", padding: "20px 0 10px", display: "flex", alignItems: "flex-end", height: "100%", gap: "12px", minHeight: "220px" }}>
       {data.map((item, idx) => (
@@ -99,7 +99,7 @@ function AnalyticalBarChart({ data }: { data: { label: string, current: number, 
 function AnalyticalAreaChart({ data }: { data: { label: string, current: number }[] }) {
   const maxVal = Math.max(...data.map(d => d.current), 10);
   const minVal = 0;
-  
+
   // Create SVG points
   // Map index to X (0 to 100) and value to Y (100 down to 0)
   const pts = data.map((d, i) => {
@@ -113,8 +113,8 @@ function AnalyticalAreaChart({ data }: { data: { label: string, current: number 
 
   return (
     <div style={{ width: "100%", height: "100%", minHeight: "220px", display: "flex", flexDirection: "column", position: "relative" }}>
-      <div style={{ flex: 1, position: "relative", width: "100%" }}>
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: "100%", height: "100%", overflow: "visible" }}>
+      <div style={{ flex: 1, position: "relative", width: "100%", minHeight: 0 }}>
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: "100%", height: "100%", overflow: "hidden", borderRadius: "2px" }}>
           <defs>
             <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--success)" stopOpacity="0.4" />
@@ -122,19 +122,35 @@ function AnalyticalAreaChart({ data }: { data: { label: string, current: number 
             </linearGradient>
           </defs>
           <polygon fill="url(#areaGrad)" points={areaPoints} style={{ transition: "all 0.5s ease" }} />
-          <polyline fill="none" stroke="var(--success)" strokeWidth="2" points={pathPoints} style={{ transition: "all 0.5s ease" }} strokeLinejoin="round" />
-          
-          {/* Data Points */}
-          {data.map((d, i) => {
-            const x = (i / (data.length - 1 || 1)) * 100;
-            const y = 100 - ((d.current - minVal) / (maxVal - minVal)) * 100;
-            return (
-              <circle key={i} cx={x} cy={y} r="2" fill="var(--bg-surface)" stroke="var(--success)" strokeWidth="1" style={{ transition: "all 0.5s ease" }}>
-                <title>{`${d.label}: ${d.current}`}</title>
-              </circle>
-            );
-          })}
+          <polyline fill="none" stroke="var(--success)" strokeWidth="2" vectorEffect="non-scaling-stroke" points={pathPoints} style={{ transition: "all 0.5s ease" }} strokeLinejoin="round" />
         </svg>
+
+        {/* Data Points HTML Overlay para manter tamanho fixo sem deformação SVG */}
+        {data.map((d, i) => {
+          const x = (i / (data.length - 1 || 1)) * 100;
+          const y = 100 - ((d.current - minVal) / (maxVal - minVal)) * 100;
+          return (
+            <div 
+              key={i} 
+              style={{ 
+                position: "absolute", 
+                left: `${x}%`, 
+                top: `${y}%`, 
+                width: "10px", 
+                height: "10px", 
+                marginTop: "-5px", 
+                marginLeft: "-5px", 
+                borderRadius: "50%", 
+                background: "var(--bg-surface)", 
+                border: "2px solid var(--success)",
+                transition: "all 0.5s ease",
+                zIndex: 10,
+                boxShadow: "0 0 0 2px var(--bg-surface)"
+              }}
+              title={`${d.label}: ${d.current}`}
+            />
+          );
+        })}
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px", borderTop: "1px solid var(--border)", paddingTop: "8px" }}>
         {data.map((d, i) => (
@@ -167,7 +183,7 @@ function AnalyticalDonutChart() {
           <span style={{ fontSize: "16px", fontWeight: 700, color: "var(--text)" }}>100%</span>
         </div>
       </div>
-      
+
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         {slices.map(s => (
           <div key={s.label} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -234,7 +250,7 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader
-        title="Painel Executivo e Analytics"
+        title="Painel de Controlo"
         actions={
           <div style={{ display: "flex", gap: "8px" }}>
             <Link href="/turmas" className="btn btn-ghost" style={{ padding: "6px 12px", borderRadius: "4px", border: "1px solid var(--border)" }}>
@@ -248,12 +264,12 @@ export default function DashboardPage() {
       />
 
       <div className="page-body" style={{ maxWidth: "1600px", margin: "0 auto", padding: "24px" }}>
-        
+
         {/* Banner Institucional */}
-        <div style={{ 
-          marginBottom: "24px", 
-          padding: "32px 40px", 
-          borderRadius: "4px", 
+        <div style={{
+          marginBottom: "24px",
+          padding: "32px 40px",
+          borderRadius: "4px",
           background: "var(--bg-elevated)",
           color: "var(--text)",
           display: "flex",
@@ -297,11 +313,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Filtros Analíticos Globais */}
-        <div style={{ 
-          marginBottom: "24px", 
-          padding: "16px 24px", 
-          background: "var(--bg-surface)", 
-          border: "1px solid var(--border)", 
+        <div style={{
+          marginBottom: "24px",
+          padding: "16px 24px",
+          background: "var(--bg-surface)",
+          border: "1px solid var(--border)",
           borderRadius: "4px",
           display: "flex",
           justifyContent: "space-between",
@@ -315,7 +331,7 @@ export default function DashboardPage() {
           <div style={{ display: "flex", gap: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <label style={{ fontSize: "12px", color: "var(--text-faint)", fontWeight: 600, textTransform: "uppercase" }}>Congregação</label>
-              <select 
+              <select
                 value={filtroCongregacao}
                 onChange={e => setFiltroCongregacao(e.target.value)}
                 style={{ padding: "6px 12px", fontSize: "13px", borderRadius: "2px", border: "1px solid var(--border)", background: "var(--bg-elevated)", color: "var(--text)", outline: "none", cursor: "pointer" }}
@@ -331,7 +347,7 @@ export default function DashboardPage() {
 
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <label style={{ fontSize: "12px", color: "var(--text-faint)", fontWeight: 600, textTransform: "uppercase" }}>Período</label>
-              <select 
+              <select
                 value={filtroTempo}
                 onChange={e => setFiltroTempo(e.target.value)}
                 style={{ padding: "6px 12px", fontSize: "13px", borderRadius: "2px", border: "1px solid var(--border)", background: "var(--bg-elevated)", color: "var(--text)", outline: "none", cursor: "pointer" }}
@@ -356,7 +372,7 @@ export default function DashboardPage() {
 
         {/* SECÇÃO DOS GRÁFICOS ESTATÍSTICOS AVANÇADOS */}
         <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "24px", marginBottom: "32px" }}>
-          
+
           {/* Gráfico de Barras - Esquerda Superior */}
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "4px", display: "flex", flexDirection: "column" }}>
             <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -397,28 +413,28 @@ export default function DashboardPage() {
 
         {/* Layout Inferior: Módulos, Tabela e Procedimentos */}
         <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "32px", alignItems: "start" }}>
-          
+
           <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
-            
+
             {/* Módulos do Sistema */}
             <div>
               <h2 style={{ fontSize: "14px", fontWeight: 600, color: "var(--text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "16px", paddingLeft: "4px", borderLeft: "3px solid var(--text)" }}>
                 Módulos do Sistema
               </h2>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                <ModuleCard 
-                  title="Catálogo de Turmas" 
-                  desc="Gestão de calendário, datas, e agrupamento congregacional." 
-                  icon={GraduationCap} 
-                  href="/turmas" 
-                  actionLabel="Abrir Turmas" 
+                <ModuleCard
+                  title="Catálogo de Turmas"
+                  desc="Gestão de calendário, datas, e agrupamento congregacional."
+                  icon={GraduationCap}
+                  href="/turmas"
+                  actionLabel="Abrir Turmas"
                 />
-                <ModuleCard 
-                  title="Directório de Estudantes" 
-                  desc="Consulta global da base de dados e histórico de registos." 
-                  icon={Users} 
-                  href="/estudantes" 
-                  actionLabel="Consultar Registos" 
+                <ModuleCard
+                  title="Directório de Estudantes"
+                  desc="Consulta global da base de dados e histórico de registos."
+                  icon={Users}
+                  href="/estudantes"
+                  actionLabel="Consultar Registos"
                 />
                 <div style={{ padding: "24px", display: "flex", flexDirection: "column", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "4px", cursor: "pointer", height: "100%" }} onClick={() => alert('Dirija-se ao painel da turma para exportar PDFs.')}>
                   <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px" }}>
@@ -461,7 +477,7 @@ export default function DashboardPage() {
                 </h2>
                 <Link href="/turmas" style={{ fontSize: "12px", color: "var(--accent)", fontWeight: 600, textDecoration: "none" }}>Abrir Lista Completa</Link>
               </div>
-              
+
               {loadingTurmas ? (
                 <div style={{ padding: "20px" }}><div className="skeleton" style={{ height: 160, borderRadius: "2px" }} /></div>
               ) : !turmasData?.data?.length ? (
@@ -483,7 +499,7 @@ export default function DashboardPage() {
                         <tr key={turma.id} style={{ borderBottom: "1px solid var(--border)", transition: "background 0.1s" }}>
                           <td style={{ padding: "12px 20px" }}>
                             <Link href={`/turmas/${turma.id}`} style={{ color: "var(--text)", fontWeight: 600, textDecoration: "none", display: "flex", gap: "8px", alignItems: "center" }}>
-                              <span style={{ fontFamily: "var(--font-mono)", color: "var(--text-faint)" }}>#{turma.numero_turma}</span> 
+                              <span style={{ fontFamily: "var(--font-mono)", color: "var(--text-faint)" }}>#{turma.numero_turma}</span>
                               {turma.nome}
                             </Link>
                           </td>
@@ -509,32 +525,32 @@ export default function DashboardPage() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
-            
+
             <div style={{ padding: "24px", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "4px" }}>
               <h2 style={{ fontSize: "14px", fontWeight: 600, color: "var(--text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "24px", borderBottom: "1px solid var(--border)", paddingBottom: "12px" }}>
                 Protocolo Operacional Padrão
               </h2>
-              
+
               <div style={{ paddingLeft: "4px" }}>
-                <WorkflowStep 
+                <WorkflowStep
                   number={1}
-                  title="Configuração da Turma" 
-                  desc="Registo formal da escola no sistema e inclusão inicial dos estudantes no catálogo." 
+                  title="Configuração da Turma"
+                  desc="Registo formal da escola no sistema e inclusão inicial dos estudantes no catálogo."
                 />
-                <WorkflowStep 
+                <WorkflowStep
                   number={2}
-                  title="Avaliação Técnica (Viajante)" 
-                  desc="Geração do token digital para o envio seguro do relatório por parte do Superintendente." 
+                  title="Avaliação Técnica (Viajante)"
+                  desc="Geração do token digital para o envio seguro do relatório por parte do Superintendente."
                 />
-                <WorkflowStep 
+                <WorkflowStep
                   number={3}
-                  title="Atribuição Algorítmica" 
-                  desc="Processamento e distribuição automática das partes do programa aos estudantes avaliados." 
+                  title="Atribuição Algorítmica"
+                  desc="Processamento e distribuição automática das partes do programa aos estudantes avaliados."
                 />
-                <WorkflowStep 
+                <WorkflowStep
                   number={4}
-                  title="Exportação de Credenciais" 
-                  desc="Geração do ficheiro PDF com o guião de designações e encaminhamento à sala virtual." 
+                  title="Exportação de Credenciais"
+                  desc="Geração do ficheiro PDF com o guião de designações e encaminhamento à sala virtual."
                 />
               </div>
             </div>

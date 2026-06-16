@@ -48,13 +48,13 @@ export default function RelatoriosPage() {
                       </td>
                       <td className="text-muted" style={{ fontSize: "13px" }}>{t.local_nome}</td>
                       <td>
-                        <Link href={`/relatorios/${t.id}/viajante`} className="btn btn-ghost btn-sm" style={{ fontSize: "12px", display: "inline-flex", gap: "6px" }}>
-                          <Users size={14} /> Viajante PDF
+                        <Link href={`/preview-pdf?url=/api/turmas/${t.id}/relatorios/viajante/pdf&title=Relatório%20do%20Viajante&back=/relatorios`} className="btn btn-ghost btn-sm" style={{ fontSize: "12px", display: "inline-flex", gap: "6px" }}>
+                          <Users size={14} /> Pré-visualizar (Viajante)
                         </Link>
                       </td>
                       <td>
-                        <Link href={`/relatorios/${t.id}/programa`} className="btn btn-ghost btn-sm" style={{ fontSize: "12px", display: "inline-flex", gap: "6px" }}>
-                          <ClipboardList size={14} /> Programa PDF
+                        <Link href={`/preview-pdf?url=/api/turmas/${t.id}/relatorios/programa/pdf&title=Programa%20da%20Escola&back=/relatorios`} className="btn btn-ghost btn-sm" style={{ fontSize: "12px", display: "inline-flex", gap: "6px" }}>
+                          <ClipboardList size={14} /> Pré-visualizar (Programa)
                         </Link>
                       </td>
                     </tr>

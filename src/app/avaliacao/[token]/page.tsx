@@ -1,501 +1,207 @@
 "use client";
-import { use, useState, useCallback } from "react";
-import { CheckCircle, Clock, AlertTriangle, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { use, useEffect, useState } from "react";
+import api from "@/lib/axios";
+import { CheckCircle, AlertCircle, BookOpen, Moon, Sun } from "lucide-react";
 
-// -------------------------------------------------------
-// TIPOS
-// -------------------------------------------------------
-interface EstudanteParaAvaliar {
-  turma_estudante_id: string;
-  nome: string;
-  numero_lista?: number;
-  congregacao_nome?: string;
-  circuito_codigo?: string;
-  papel_ministerial: string;
-  idade?: number;
-  anos_batismo?: number;
-  nivel_oratoria?: string;
-  avaliado_pelo_viajante: number;
-  data_avaliacao?: string;
-  observacoes?: string;
-}
-
-const NIVEIS: { valor: string; label: string; cor: string }[] = [
-  { valor: "A+", label: "A+", cor: "#16a34a" },
-  { valor: "A",  label: "A",  cor: "#22c55e" },
-  { valor: "A-", label: "A−", cor: "#4ade80" },
-  { valor: "B+", label: "B+", cor: "#2563eb" },
-  { valor: "B",  label: "B",  cor: "#3b82f6" },
-  { valor: "B-", label: "B−", cor: "#60a5fa" },
-  { valor: "C+", label: "C+", cor: "#d97706" },
-  { valor: "C",  label: "C",  cor: "#f59e0b" },
-  { valor: "C-", label: "C−", cor: "#fbbf24" },
-  { valor: "NR", label: "NR", cor: "#ef4444" },
-];
-
-const OBSERVACOES_RAPIDAS = [
-  "Limitação por idade avançada",
-  "Mudança de território",
-  "Desqualificado ministerialmente",
-  "Problemas de saúde",
-  "Ausente da turma",
-];
-
-// -------------------------------------------------------
-// CARD DE ESTUDANTE
-// -------------------------------------------------------
-function EstudanteCard({
-  est,
-  token,
-  onSaved,
-}: {
-  est: EstudanteParaAvaliar;
-  token: string;
-  onSaved: () => void;
-}) {
-  const [aberto, setAberto] = useState(!est.avaliado_pelo_viajante);
-  const [nivel, setNivel] = useState(est.nivel_oratoria ?? "");
-  const [obs, setObs] = useState(est.observacoes ?? "");
-  const [salvando, setSalvando] = useState(false);
+export default function AvaliacaoViajantePage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = use(params);
+  const [dados, setDados] = useState<any>(null);
   const [erro, setErro] = useState("");
-  const [sucesso, setSucesso] = useState(false);
+  const [salvando, setSalvando] = useState<string | null>(null);
+  const [darkMode, setDarkMode] = useState(false);
+  const [pesquisa, setPesquisa] = useState("");
 
-  const handleSalvar = async () => {
-    if (!nivel) { setErro("Seleccione o nível de oratória."); return; }
-    setSalvando(true);
-    setErro("");
+  useEffect(() => {
+    // Tenta ler a preferência do sistema ou do storage
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setDarkMode(prefersDark);
+    
+    api.get(`/public/avaliacao/${token}`)
+      .then(res => setDados(res.data.data))
+      .catch(err => setErro(err.response?.data?.erro || "Link inválido ou expirado."));
+  }, [token]);
+
+  const registarNota = async (estudante_id: string, nivel: string) => {
+    setSalvando(estudante_id);
     try {
-      const res = await fetch(`/api/public/avaliacao/${token}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          turma_estudante_id: est.turma_estudante_id,
-          nivel_oratoria: nivel,
-          observacoes: obs || null,
-        }),
-      });
-      if (!res.ok) {
-        const d = await res.json();
-        throw new Error(d.erro || "Erro ao guardar.");
-      }
-      setSucesso(true);
-      setTimeout(() => { setAberto(false); onSaved(); }, 800);
-    } catch (e: unknown) {
-      setErro(e instanceof Error ? e.message : "Erro desconhecido.");
+      await api.patch(`/public/avaliacao/${token}`, { turma_estudante_id: estudante_id, nivel });
+      
+      setDados((prev: any) => ({
+        ...prev,
+        estudantes: prev.estudantes.map((e: any) => 
+          e.turma_estudante_id === estudante_id ? { ...e, nivel_oratoria: nivel, avaliado_pelo_viajante: 1 } : e
+        )
+      }));
+    } catch (err) {
+      alert("Erro ao gravar nota. Verifique a internet.");
     } finally {
-      setSalvando(false);
+      setSalvando(null);
     }
   };
 
-  const avaliado = est.avaliado_pelo_viajante === 1;
+  const theme = {
+    bg: darkMode ? "#121212" : "#f8f9fa",
+    cardBg: darkMode ? "#1e1e1e" : "#ffffff",
+    text: darkMode ? "#ffffff" : "#1a1a1a",
+    textMuted: darkMode ? "#a0a0a0" : "#666666",
+    border: darkMode ? "#333333" : "#eaeaea",
+    primary: darkMode ? "#2563eb" : "#1d4ed8",
+    headerBg: darkMode ? "#0f172a" : "var(--primary, #0056b3)",
+    btnNormalBg: darkMode ? "#2a2a2a" : "#f0f0f0",
+  };
+
+  if (erro) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: theme.bg }}>
+      <div style={{ background: theme.cardBg, padding: 40, borderRadius: 12, textAlign: "center", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", maxWidth: 400 }}>
+        <AlertCircle size={56} color="#ef4444" style={{ margin: "0 auto 20px" }} />
+        <h2 style={{ fontSize: 22, color: theme.text, marginBottom: 12 }}>Acesso Negado</h2>
+        <p style={{ color: theme.textMuted, lineHeight: 1.5 }}>{erro}</p>
+      </div>
+    </div>
+  );
+
+  if (!dados) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: theme.bg, color: theme.text }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+        <div style={{ width: 40, height: 40, border: "3px solid " + theme.primary, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+        <p style={{ fontSize: 16, fontWeight: 500 }}>A preparar pauta eletrónica...</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    </div>
+  );
+
+  const { turma, estudantes } = dados;
+  const notas = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-"];
+  
+  // Filtro de pesquisa
+  const estudantesFiltrados = estudantes.filter((e: any) => 
+    e.estudante_nome.toLowerCase().includes(pesquisa.toLowerCase()) ||
+    (e.congregacao_nome && e.congregacao_nome.toLowerCase().includes(pesquisa.toLowerCase()))
+  );
 
   return (
-    <div style={{
-      background: "#fff",
-      border: `1px solid ${avaliado && !aberto ? "#bbf7d0" : "#e5e7eb"}`,
-      borderRadius: 12,
-      overflow: "hidden",
-      transition: "all 0.2s ease",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-    }}>
-      {/* Cabeçalho do card */}
-      <button
-        onClick={() => setAberto(!aberto)}
+    <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, transition: "background 0.3s ease", paddingBottom: 80 }}>
+      
+      {/* Botão de Tema Flutuante */}
+      <button 
+        onClick={() => setDarkMode(!darkMode)}
         style={{
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          gap: 16,
-          padding: "16px 20px",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          textAlign: "left",
-        }}
-      >
-        {/* Avatar */}
-        <div style={{
-          width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
-          background: avaliado ? "#dcfce7" : "#f3f4f6",
+          position: "fixed", top: 16, right: 16, zIndex: 100,
+          background: "rgba(0,0,0,0.2)", backdropFilter: "blur(4px)",
+          border: "1px solid rgba(255,255,255,0.1)", color: "white",
+          width: 44, height: 44, borderRadius: "50%",
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontWeight: 700, fontSize: 16,
-          color: avaliado ? "#16a34a" : "#6b7280",
-        }}>
-          {avaliado
-            ? <CheckCircle size={20} color="#16a34a" />
-            : est.nome.charAt(0).toUpperCase()
-          }
-        </div>
-
-        {/* Info principal */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <span style={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>
-              {est.nome}
-            </span>
-            {est.numero_lista && (
-              <span style={{ fontSize: 11, color: "#9ca3af", fontFamily: "monospace" }}>
-                #{est.numero_lista}
-              </span>
-            )}
-            {avaliado && (est.nivel_oratoria || est.observacoes?.includes("[NR]")) && (
-              <span style={{
-                padding: "2px 8px", borderRadius: 99, fontSize: 11, fontWeight: 700,
-                background: est.nivel_oratoria ? "#dcfce7" : "#fee2e2", 
-                color: est.nivel_oratoria ? "#16a34a" : "#dc2626",
-              }}>
-                {est.nivel_oratoria || "NR"}
-              </span>
-            )}
-          </div>
-          <div style={{ fontSize: 13, color: "#6b7280", marginTop: 2, display: "flex", gap: 12, flexWrap: "wrap" }}>
-            {est.congregacao_nome && <span>⛪ {est.congregacao_nome}</span>}
-            {est.circuito_codigo && <span>📍 Cir. {est.circuito_codigo}</span>}
-            {est.papel_ministerial && (
-              <span style={{ textTransform: "capitalize" }}>
-                {est.papel_ministerial === "anciao" ? "🔑 Ancião" : "👤 Servo Ministerial"}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Estado + Toggle */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-          {!avaliado && (
-            <span style={{
-              padding: "4px 10px", borderRadius: 99, fontSize: 11, fontWeight: 600,
-              background: "#fef9c3", color: "#a16207",
-            }}>
-              Pendente
-            </span>
-          )}
-          {aberto ? <ChevronUp size={16} color="#9ca3af" /> : <ChevronDown size={16} color="#9ca3af" />}
-        </div>
+          cursor: "pointer", transition: "transform 0.2s"
+        }}
+        onMouseDown={e => e.currentTarget.style.transform = "scale(0.9)"}
+        onMouseUp={e => e.currentTarget.style.transform = "scale(1)"}
+      >
+        {darkMode ? <Sun size={20} /> : <Moon size={20} />}
       </button>
 
-      {/* Painel de avaliação */}
-      {aberto && (
-        <div style={{ padding: "0 20px 20px", borderTop: "1px solid #f3f4f6" }}>
-          {/* Info extra */}
-          {(est.idade || est.anos_batismo) && (
-            <div style={{ display: "flex", gap: 24, padding: "12px 0", fontSize: 13, color: "#6b7280" }}>
-              {est.idade && <span>🎂 {est.idade} anos</span>}
-              {est.anos_batismo && <span>💧 {est.anos_batismo} anos de batismo</span>}
-            </div>
-          )}
+      {/* Cabeçalho Expandido */}
+      <div style={{ background: theme.headerBg, color: "white", padding: "48px 24px", textAlign: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+        <BookOpen size={40} style={{ margin: "0 auto 16px", opacity: 0.9 }} />
+        <h1 style={{ fontSize: 28, fontWeight: 800, margin: "0 0 8px 0", letterSpacing: "-0.5px" }}>Avaliação do Viajante</h1>
+        <p style={{ margin: 0, fontSize: 16, opacity: 0.85, fontWeight: 500 }}>Turma {turma.numero_turma}ª - {turma.nome}</p>
+      </div>
 
-          {/* Selector de nível */}
-          <div style={{ marginTop: 16 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: 10 }}>
-              Nível de Oratória *
-            </label>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {NIVEIS.map((n) => (
-                <button
-                  key={n.valor}
-                  onClick={() => setNivel(n.valor)}
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: 8,
-                    border: `2px solid ${nivel === n.valor ? n.cor : "#e5e7eb"}`,
-                    background: nivel === n.valor ? n.cor : "#fff",
-                    color: nivel === n.valor ? "#fff" : "#374151",
-                    fontWeight: 700,
-                    fontSize: 14,
-                    cursor: "pointer",
-                    transition: "all 0.15s",
-                    minWidth: 52,
-                  }}
-                >
-                  {n.label}
-                </button>
-              ))}
-            </div>
+      {/* Contentor Expandido com Grelha */}
+      <div style={{ maxWidth: 1600, width: "100%", margin: "-24px auto 0", padding: "0 16px", boxSizing: "border-box" }}>
+        
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 32 }}>
+          <div style={{ flex: "1 1 300px", background: theme.cardBg, padding: "20px 24px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+            <p style={{ margin: 0, color: theme.textMuted, fontSize: 15, lineHeight: 1.6 }}>
+              As suas avaliações são guardadas automaticamente na base de dados do <strong>Escola EAC</strong>. Selecione a nota apropriada.
+            </p>
           </div>
-
-          {/* Observações */}
-          <div style={{ marginTop: 20 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: 10 }}>
-              Observações / Limitações
-            </label>
-
-            {/* Sugestões rápidas */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-              {OBSERVACOES_RAPIDAS.map((op) => (
-                <button
-                  key={op}
-                  onClick={() => setObs((prev) => prev ? `${prev}; ${op}` : op)}
-                  style={{
-                    padding: "4px 10px", borderRadius: 99, fontSize: 12,
-                    border: "1px solid #e5e7eb", background: "#f9fafb",
-                    color: "#4b5563", cursor: "pointer",
-                  }}
-                >
-                  + {op}
-                </button>
-              ))}
-            </div>
-
-            <textarea
-              value={obs}
-              onChange={(e) => setObs(e.target.value)}
-              placeholder="Indique limitações, motivos de ausência, mudança de território, etc."
-              rows={3}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid #d1d5db",
-                fontSize: 14,
-                resize: "vertical",
-                fontFamily: "inherit",
-                color: "#111827",
-                boxSizing: "border-box",
+          
+          <div style={{ flex: "1 1 300px", display: "flex", background: theme.cardBg, boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
+            <input 
+              type="text" 
+              placeholder="Pesquisar por nome ou congregação..." 
+              value={pesquisa}
+              onChange={e => setPesquisa(e.target.value)}
+              style={{ 
+                width: "100%", padding: "0 24px", fontSize: 16, border: "none", 
+                background: "transparent", color: theme.text, outline: "none" 
               }}
             />
           </div>
-
-          {/* Erro / Sucesso */}
-          {erro && (
-            <div style={{ marginTop: 12, padding: "10px 14px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, color: "#dc2626", fontSize: 13 }}>
-              ⚠️ {erro}
-            </div>
-          )}
-          {sucesso && (
-            <div style={{ marginTop: 12, padding: "10px 14px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, color: "#16a34a", fontSize: 13 }}>
-              ✅ Avaliação guardada com sucesso!
-            </div>
-          )}
-
-          {/* Acção */}
-          <button
-            onClick={handleSalvar}
-            disabled={salvando || sucesso}
-            style={{
-              marginTop: 16,
-              padding: "11px 24px",
-              borderRadius: 8,
-              background: sucesso ? "#16a34a" : "#1e40af",
-              color: "#fff",
-              fontWeight: 700,
-              fontSize: 14,
-              border: "none",
-              cursor: salvando || sucesso ? "not-allowed" : "pointer",
-              opacity: salvando ? 0.7 : 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              transition: "all 0.2s",
-            }}
-          >
-            {salvando ? "A guardar..." : sucesso ? "✓ Guardado" : "Guardar Avaliação"}
-          </button>
         </div>
-      )}
-    </div>
-  );
-}
 
-// -------------------------------------------------------
-// PÁGINA PRINCIPAL
-// -------------------------------------------------------
-export default function AvaliacaoPublicaPage({
-  params,
-}: {
-  params: Promise<{ token: string }>;
-}) {
-  const { token } = use(params);
-  const qc = useQueryClient();
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["avaliacao-publica", token],
-    queryFn: async () => {
-      const res = await fetch(`/api/public/avaliacao/${token}`);
-      if (!res.ok) {
-        const d = await res.json();
-        throw new Error(d.erro || "Erro ao carregar.");
-      }
-      return res.json() as Promise<{
-        data: {
-          turma: { id: string; nome: string; numero_turma: number };
-          token: { descricao?: string; expira_em: string };
-          estudantes: EstudanteParaAvaliar[];
-        };
-      }>;
-    },
-    retry: false,
-  });
-
-  const handleSaved = useCallback(() => {
-    qc.invalidateQueries({ queryKey: ["avaliacao-publica", token] });
-  }, [qc, token]);
-
-  const turma = data?.data.turma;
-  const tokenInfo = data?.data.token;
-  const estudantes = data?.data.estudantes ?? [];
-  const avaliados = estudantes.filter((e) => e.avaliado_pelo_viajante).length;
-  const pct = estudantes.length > 0 ? Math.round((avaliados / estudantes.length) * 100) : 0;
-  const expiraEm = tokenInfo ? new Date(tokenInfo.expira_em) : null;
-  const diasRestantes = expiraEm
-    ? Math.ceil((expiraEm.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : 0;
-
-  return (
-    <div style={{ minHeight: "100dvh", background: "#f8fafc", fontFamily: "system-ui, -apple-system, sans-serif" }}>
-      {/* Header */}
-      <header style={{
-        background: "#fff",
-        borderBottom: "1px solid #e5e7eb",
-        padding: "16px 24px",
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        position: "sticky",
-        top: 0,
-        zIndex: 10,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-      }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 8, background: "#1e40af",
-          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        <div style={{ 
+          display: "grid", 
+          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", 
+          gap: 16 
         }}>
-          <Sparkles size={18} color="#fff" />
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 800, fontSize: 15, color: "#111827", letterSpacing: "-0.02em" }}>
-            EAC Lab — Avaliação de Viajante
-          </div>
-          {turma && (
-            <div style={{ fontSize: 12, color: "#6b7280", marginTop: 1 }}>
-              {turma.numero_turma}ª Turma · {turma.nome}
-            </div>
-          )}
-        </div>
-        {expiraEm && (
-          <div style={{
-            display: "flex", alignItems: "center", gap: 6,
-            padding: "6px 12px", borderRadius: 99, fontSize: 12, fontWeight: 600,
-            background: diasRestantes <= 2 ? "#fef2f2" : "#f0fdf4",
-            color: diasRestantes <= 2 ? "#dc2626" : "#16a34a",
-            border: `1px solid ${diasRestantes <= 2 ? "#fecaca" : "#bbf7d0"}`,
-          }}>
-            <Clock size={12} />
-            {diasRestantes}d restantes
-          </div>
-        )}
-      </header>
-
-      {/* Conteúdo */}
-      <main style={{ maxWidth: 720, margin: "0 auto", padding: "32px 16px" }}>
-
-        {/* Loading */}
-        {isLoading && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {[1, 2, 3].map((i) => (
-              <div key={i} style={{ height: 80, borderRadius: 12, background: "#e5e7eb", animation: "pulse 1.5s infinite" }} />
-            ))}
-          </div>
-        )}
-
-        {/* Erro / Link inválido */}
-        {isError && (
-          <div style={{
-            textAlign: "center", padding: "80px 24px",
-            background: "#fff", borderRadius: 16, border: "1px solid #fee2e2",
-          }}>
-            <AlertTriangle size={48} color="#dc2626" style={{ margin: "0 auto 16px" }} />
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#111827", marginBottom: 8 }}>
-              Link Inválido ou Expirado
-            </h2>
-            <p style={{ color: "#6b7280", fontSize: 15 }}>
-              Este link de avaliação não é válido, já expirou ou foi revogado pelo administrador.<br />
-              Solicite um novo link ao coordenador da turma.
-            </p>
-          </div>
-        )}
-
-        {/* Dados carregados */}
-        {data && (
-          <>
-            {/* Boas-vindas + Progresso */}
-            <div style={{
-              background: "#fff", borderRadius: 16, border: "1px solid #e5e7eb",
-              padding: "24px", marginBottom: 24,
-              boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+          {estudantesFiltrados.map((e: any) => (
+            <div key={e.turma_estudante_id} style={{ 
+              background: theme.cardBg, 
+              padding: 24, 
+              borderLeft: e.avaliado_pelo_viajante ? `6px solid #10b981` : `6px solid transparent`,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+              display: "flex", flexDirection: "column"
             }}>
-              {tokenInfo?.descricao && (
-                <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 8 }}>
-                  👤 {tokenInfo.descricao}
+              
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+                <div>
+                  <h3 style={{ margin: "0 0 6px 0", fontSize: 18, fontWeight: 700, color: theme.text }}>
+                    {e.numero_lista ? <span style={{ opacity: 0.5, marginRight: 4 }}>#{e.numero_lista}</span> : ""}
+                    {e.estudante_nome}
+                  </h3>
+                  <p style={{ margin: 0, fontSize: 14, color: theme.textMuted, fontWeight: 500 }}>
+                    {e.papel_ministerial === "anciao" ? "Ancião" : "Servo Ministerial"}
+                    <span style={{ opacity: 0.5, margin: "0 6px" }}>•</span> 
+                    {e.congregacao_nome || "Sem congregação"}
+                  </p>
                 </div>
-              )}
-              <h1 style={{ fontSize: 20, fontWeight: 800, color: "#111827", marginBottom: 4, letterSpacing: "-0.02em" }}>
-                Avaliação da {turma?.numero_turma}ª Turma
-              </h1>
-              <p style={{ fontSize: 14, color: "#6b7280", marginBottom: 20 }}>
-                Indique a classificação como orador (A = excelente, B = acima da média, C = mediano) podendo complementar com sinais (+ e -) para ajudar nas designações.<br /><br />
-                <strong>Obs. 1:</strong> Caso conclua que determinado ancião esteja limitado por questões de saúde ou idade, coloque: <strong>NR</strong>.<br />
-                <strong>Obs. 2:</strong> Caso um irmão tenha deixado de servir como ancião, adicione a observação: <strong>Desqualificado ministerialmente</strong>.
-              </p>
-
-              {/* Barra de progresso */}
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>
-                  Progresso da avaliação
-                </span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: pct === 100 ? "#16a34a" : "#1e40af", fontFamily: "monospace" }}>
-                  {avaliados}/{estudantes.length}
-                </span>
+                {e.avaliado_pelo_viajante && (
+                  <div style={{ background: "rgba(16, 185, 129, 0.1)", padding: 6 }}>
+                    <CheckCircle size={24} color="#10b981" />
+                  </div>
+                )}
               </div>
-              <div style={{ height: 8, background: "#f3f4f6", borderRadius: 99, overflow: "hidden" }}>
-                <div style={{
-                  height: "100%",
-                  width: `${pct}%`,
-                  background: pct === 100 ? "#16a34a" : "#1e40af",
-                  borderRadius: 99,
-                  transition: "width 0.6s cubic-bezier(0.16,1,0.3,1)",
-                }} />
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4, marginTop: "auto" }}>
+                {notas.map(nota => {
+                  const isSelected = e.nivel_oratoria === nota;
+                  return (
+                    <button
+                      key={nota}
+                      onClick={() => registarNota(e.turma_estudante_id, nota)}
+                      disabled={salvando === e.turma_estudante_id}
+                      style={{
+                        padding: "12px 0",
+                        background: isSelected ? theme.primary : theme.btnNormalBg,
+                        color: isSelected ? "white" : theme.text,
+                        border: "none",
+                        fontWeight: isSelected ? 700 : 500,
+                        fontSize: 16,
+                        cursor: "pointer",
+                        transition: "all 0.1s",
+                        opacity: (salvando === e.turma_estudante_id && isSelected) ? 0.7 : 1,
+                      }}
+                      onMouseEnter={e => { if(!isSelected) e.currentTarget.style.background = darkMode ? "#3a3a3a" : "#e0e0e0" }}
+                      onMouseLeave={e => { if(!isSelected) e.currentTarget.style.background = theme.btnNormalBg }}
+                    >
+                      {salvando === e.turma_estudante_id && isSelected ? "..." : nota}
+                    </button>
+                  )
+                })}
               </div>
-              {pct === 100 && (
-                <div style={{ marginTop: 12, padding: "10px 14px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, fontSize: 13, color: "#16a34a", fontWeight: 600 }}>
-                  ✅ Todos os estudantes foram avaliados. Obrigado!
-                </div>
-              )}
-            </div>
 
-            {/* Lista de estudantes */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {estudantes.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "48px 24px", color: "#6b7280" }}>
-                  Nenhum estudante inscrito nesta turma.
-                </div>
-              ) : (
-                estudantes.map((est) => (
-                  <EstudanteCard
-                    key={est.turma_estudante_id}
-                    est={est}
-                    token={token}
-                    onSaved={handleSaved}
-                  />
-                ))
-              )}
             </div>
+          ))}
+        </div>
 
-            {/* Footer */}
-            <div style={{ marginTop: 32, textAlign: "center", fontSize: 12, color: "#9ca3af" }}>
-              EAC Lab · Acesso seguro e temporário · Expira em{" "}
-              {expiraEm?.toLocaleDateString("pt-AO", { day: "2-digit", month: "long", year: "numeric" })}
-            </div>
-          </>
+        {estudantesFiltrados.length === 0 && (
+          <div style={{ textAlign: "center", padding: 60, background: theme.cardBg }}>
+            <p style={{ color: theme.textMuted, fontSize: 18 }}>Nenhum estudante encontrado.</p>
+          </div>
         )}
-      </main>
 
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-      `}</style>
+      </div>
     </div>
   );
 }

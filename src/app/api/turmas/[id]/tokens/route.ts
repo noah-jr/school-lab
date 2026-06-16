@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { runMigrations } from "@/lib/db";
 import {
   criarTokenAvaliacao,
   listarTokensDaTurma,
@@ -21,7 +20,6 @@ export async function GET(
       return NextResponse.json({ erro: "Não autenticado." }, { status: 401 });
     }
 
-    runMigrations();
     const { id } = await params;
     const tokens = listarTokensDaTurma(id);
 

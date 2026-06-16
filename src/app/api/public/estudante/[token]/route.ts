@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runMigrations } from "@/lib/db";
-import { obterTurmaEstudantePorToken } from "@/lib/repositories/estudantes";
+import { obterTurmaEstudantePorToken, historicoEstudante } from "@/lib/repositories/estudantes";
 import { listarDesignacoesDoEstudante, confirmarDesignacao, recusarDesignacao } from "@/lib/repositories/designacoes";
 
 // -------------------------------------------------------
@@ -12,7 +11,6 @@ export async function GET(
   { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    runMigrations();
     const { token } = await params;
 
     const estudante = obterTurmaEstudantePorToken(token);
@@ -24,16 +22,13 @@ export async function GET(
     }
 
     const designacoes = listarDesignacoesDoEstudante(estudante.id);
+    const historico = historicoEstudante(estudante.estudante_id);
 
     return NextResponse.json({
       data: {
-        estudante: {
-          id: estudante.id,
-          nome: estudante.estudante_nome,
-          turma_nome: estudante.turma_nome,
-          numero_turma: estudante.numero_turma
-        },
-        designacoes
+        estudante,
+        designacoes,
+        historico
       },
     });
   } catch (err) {

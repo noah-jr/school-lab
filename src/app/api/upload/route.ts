@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuid } from "uuid";
 import fs from "fs/promises";
 import path from "path";
-import getDb, { runMigrations } from "@/lib/db";
+import getDb from "@/lib/db";
 import { criarAuditLog } from "@/lib/db/audit";
 
 const UPLOAD_DIR = path.join(process.cwd(), "data", "uploads");
@@ -40,7 +40,6 @@ export async function POST(req: NextRequest) {
     await fs.writeFile(caminhoAbsoluto, buffer);
 
     // Gravar metadados na base de dados
-    runMigrations();
     const db = getDb();
     const id = uuid();
     const agora = new Date().toISOString();

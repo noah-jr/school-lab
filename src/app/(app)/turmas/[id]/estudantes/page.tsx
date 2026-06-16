@@ -102,6 +102,21 @@ export default function TurmaEstudantesPage({ params }: { params: Promise<{ id: 
         ]}
         actions={
           <div className="flex gap-2">
+            <button className={`btn btn-ghost ${salvando ? "btn-loading" : ""}`} onClick={async () => {
+              setSalvando(true);
+              try {
+                const { data } = await api.post(`/turmas/${id}/token-avaliacao`);
+                const link = `${window.location.origin}/avaliacao/${data.token}`;
+                await navigator.clipboard.writeText(link);
+                toast.sucesso("Link do Viajante copiado para a área de transferência!");
+              } catch (err) {
+                toast.erro("Erro ao gerar link para o viajante.");
+              } finally {
+                setSalvando(false);
+              }
+            }}>
+              <Link2 size={14} /> Link Viajante
+            </button>
             <label className={`btn btn-ghost ${salvando ? "btn-loading" : ""}`} style={{ cursor: "pointer" }}>
               <input type="file" accept=".docx" style={{ display: "none" }} onChange={handleImportUpload} disabled={salvando} />
               Importar DOCX

@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runMigrations } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 import { listarTurmas, criarTurma, estatisticasTurmas } from "@/lib/repositories/turmas";
-
-// Garante que as migrações foram aplicadas
-let migrado = false;
-function garantirMigracoes() {
-  if (!migrado) { runMigrations(); migrado = true; }
-}
+import { registarLog } from "@/lib/logger";
 
 // GET /api/turmas
 export async function GET(req: NextRequest) {
   try {
-    garantirMigracoes();
+    const session = await getSession();
+    if (!session) return NextResponse.json({ erro: "Não autorizado" }, { status: 401 });
+    
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status") ?? undefined;
     const pagina = Number(searchParams.get("pagina") ?? "1");
@@ -37,9 +34,19 @@ export async function GET(req: NextRequest) {
 // POST /api/turmas
 export async function POST(req: NextRequest) {
   try {
-    garantirMigracoes();
+    const session = await getSession();
+    if (!session) return NextResponse.json({ erro: "Não autorizado" }, { status: 401 });
+    
     const body = await req.json();
     const turma = criarTurma(body);
+
+    registarLog({
+      acao: "Turma Criada",
+      detalhe: `Nova turma "${turma.nome || `${turma.numero_turma}\u00aa Turma`}" criada no sistema.`,
+      severidade: "success",
+      utilizadorId: session.id
+    });
+
     return NextResponse.json({ data: turma, mensagem: "Turma criada com sucesso" }, { status: 201 });
   } catch (err) {
     console.error("[POST /api/turmas]", err);
