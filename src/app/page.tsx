@@ -25,7 +25,7 @@ export default function LandingPage() {
     window.addEventListener("scroll", handleScroll);
 
     // Registar visita pública do internauta
-    fetch("/api/public/visitor-log", {
+    fetch("/api/public/visita", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pagina: "Apresentação (Landing Page)" }),

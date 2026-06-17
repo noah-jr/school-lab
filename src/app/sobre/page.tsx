@@ -10,7 +10,7 @@ export default function SobrePage() {
   const { data: user } = useAuth();
 
   useEffect(() => {
-    fetch("/api/public/visitor-log", {
+    fetch("/api/public/visita", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pagina: "Sobre o Sistema" }),
