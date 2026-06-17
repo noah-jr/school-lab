@@ -378,7 +378,12 @@ export default function DashboardPage() {
   }, [chartEstatisticas]);
 
   const filteredEstudantes = estudantesReq ? estudantesReq.total : "—";
-  const filteredTurmas = stats ? stats.total : "—";
+  
+  // Total de turmas com base no período e congregação filtrados (dados do gráfico)
+  const filteredTurmas = useMemo(() => {
+    if (!chartEstatisticas?.evolucaoTurmas) return "—";
+    return chartEstatisticas.evolucaoTurmas.reduce((acc: number, curr: any) => acc + curr.current, 0);
+  }, [chartEstatisticas]);
 
   return (
     <>
@@ -478,10 +483,10 @@ export default function DashboardPage() {
 
         {/* KPIs Grid */}
         <div className="stats-grid" style={{ marginBottom: "32px" }}>
-          <StatCard icon={BookOpen} label="Total de Turmas" value={loadingTurmas ? "—" : filteredTurmas} sub={`Registos Activos`} accent="var(--info)" />
-          <StatCard icon={Activity} label="Em Preparação" value={loadingTurmas ? "—" : (stats?.rascunhos || 0)} sub="Por atribuir designações" accent="var(--success)" />
-          <StatCard icon={Users} label="Corpo Estudantil" value={estudantesReq ? filteredEstudantes : "—"} sub="Ativos no período" accent="var(--warning)" />
-          <StatCard icon={Key} label="Acessos Ativos" value={utilizadoresReq ? utilizadoresReq.length : "—"} sub="Perfis no sistema" accent="var(--accent)" />
+          <StatCard icon={BookOpen} label="Turmas Criadas" value={filteredTurmas} sub={`Registos no período (${filtroTempo})`} accent="var(--info)" />
+          <StatCard icon={Activity} label="Em Preparação" value={loadingTurmas ? "—" : (stats?.rascunhos || 0)} sub="Global: Por atribuir" accent="var(--success)" />
+          <StatCard icon={Users} label="Corpo Estudantil" value={filteredEstudantes} sub="Global: Ativos no sistema" accent="var(--warning)" />
+          <StatCard icon={Key} label="Acessos Ativos" value={utilizadoresReq ? utilizadoresReq.length : "—"} sub="Global: Perfis no sistema" accent="var(--accent)" />
         </div>
 
         {/* SECÇÃO DOS GRÁFICOS ESTATÍSTICOS AVANÇADOS */}
