@@ -17,7 +17,7 @@ export async function GET(req: Request) {
 
     const db = getDb();
     
-    // Garantir que a tabela existe
+    // Garantir que a tabela existe (com ip_address já incluído)
     db.prepare(`
       CREATE TABLE IF NOT EXISTS logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,6 +25,7 @@ export async function GET(req: Request) {
         acao TEXT NOT NULL,
         detalhe TEXT NOT NULL,
         severidade TEXT NOT NULL DEFAULT 'info',
+        ip_address TEXT,
         criado_em TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (utilizador_id) REFERENCES utilizadores(id) ON DELETE SET NULL
       )
@@ -43,9 +44,6 @@ export async function GET(req: Request) {
       countParams = [likeQ, likeQ, likeQ];
       queryParams = [likeQ, likeQ, likeQ];
     }
-
-    // Migração: garantir coluna ip_address (tolerante a falha se já existir)
-    try { db.prepare("ALTER TABLE logs ADD COLUMN ip_address TEXT").run(); } catch (_) {}
 
     const totalRow = db.prepare(`SELECT COUNT(*) as total ${baseQuery}`).get(...countParams) as any;
     const total = totalRow.total;
