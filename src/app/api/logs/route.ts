@@ -48,7 +48,7 @@ export async function GET(req: Request) {
     const total = totalRow.total;
 
     const logs = db.prepare(`
-      SELECT l.*, u.nome AS utilizador_nome 
+      SELECT l.*, l.ip_address, u.nome AS utilizador_nome 
       ${baseQuery}
       ORDER BY l.id DESC
       LIMIT ? OFFSET ?

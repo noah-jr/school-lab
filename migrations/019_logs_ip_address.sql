@@ -1,0 +1,1 @@
+ALTER TABLE logs ADD COLUMN ip_address TEXT;

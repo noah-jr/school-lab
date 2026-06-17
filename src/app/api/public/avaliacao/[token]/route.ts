@@ -25,10 +25,14 @@ export async function GET(
     const tokenData = validarToken(db, token);
     const turma_id = tokenData.id;
 
-    db.prepare("INSERT INTO logs (acao, detalhe, severidade) VALUES (?, ?, ?)").run(
+    const ipAddress = req.headers.get("x-forwarded-for")?.split(",")[0].trim()
+      || req.headers.get("x-real-ip")
+      || "127.0.0.1";
+    db.prepare("INSERT INTO logs (acao, detalhe, severidade, ip_address) VALUES (?, ?, ?, ?)").run(
       "acesso_portal_viajante",
       `Acesso ao portal de avaliação pelo Viajante ${tokenData.viajante_nome || "Desconhecido"} na turma ${tokenData.nome || tokenData.numero_turma}`,
-      "info"
+      "info",
+      ipAddress
     );
 
     const turma = db.prepare(`

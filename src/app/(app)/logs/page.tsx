@@ -95,10 +95,11 @@ export default function LogsPage() {
                 <thead style={{ background: "var(--bg-elevated)", borderBottom: "1px solid var(--border)" }}>
                   <tr>
                     <th style={{ padding: "12px 24px", width: 60 }}></th>
-                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase" }}>Data / Hora</th>
-                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase" }}>Ação</th>
-                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase" }}>Utilizador</th>
-                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase" }}>Detalhes</th>
+                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px" }}>Data / Hora</th>
+                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px" }}>Ação</th>
+                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px" }}>Utilizador</th>
+                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px" }}>IP de Origem</th>
+                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px" }}>Detalhes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -107,16 +108,25 @@ export default function LogsPage() {
                       <td style={{ padding: "12px 24px", textAlign: "center" }}>
                         {getLogIcon(log.severidade)}
                       </td>
-                      <td className="font-mono text-muted" style={{ fontSize: "12px" }}>
+                      <td className="font-mono text-muted" style={{ fontSize: "12px", padding: "12px 16px", whiteSpace: "nowrap" }}>
                         {new Date(log.criado_em).toLocaleString("pt-PT")}
                       </td>
-                      <td style={{ fontSize: "13px", fontWeight: 500, color: "var(--text)" }}>
+                      <td style={{ fontSize: "13px", fontWeight: 500, color: "var(--text)", padding: "12px 16px" }}>
                         {log.acao}
                       </td>
-                      <td style={{ fontSize: "13px", color: "var(--text)" }}>
+                      <td style={{ fontSize: "13px", color: "var(--text)", padding: "12px 16px" }}>
                         {log.utilizador_nome || "Sistema"}
                       </td>
-                      <td style={{ fontSize: "12px", color: "var(--text-muted)", fontFamily: "var(--font-mono)", maxWidth: "300px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      <td style={{ padding: "12px 16px" }}>
+                        {log.ip_address ? (
+                          <span style={{ fontSize: "12px", fontFamily: "var(--font-mono)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "3px", padding: "2px 6px", color: "var(--text-muted)" }}>
+                            {log.ip_address}
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: "11px", color: "var(--text-faint)" }}>—</span>
+                        )}
+                      </td>
+                      <td style={{ fontSize: "12px", color: "var(--text-muted)", fontFamily: "var(--font-mono)", maxWidth: "260px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", padding: "12px 16px" }}>
                         {log.detalhe}
                       </td>
                     </tr>

@@ -23,10 +23,14 @@ export async function GET(
     }
 
     const db = getDb();
-    db.prepare("INSERT INTO logs (acao, detalhe, severidade) VALUES (?, ?, ?)").run(
+    const ipAddress = req.headers.get("x-forwarded-for")?.split(",")[0].trim()
+      || req.headers.get("x-real-ip")
+      || "127.0.0.1";
+    db.prepare("INSERT INTO logs (acao, detalhe, severidade, ip_address) VALUES (?, ?, ?, ?)").run(
       "acesso_portal_estudante",
       `Acesso ao portal pelo estudante ${estudante.estudante_nome || estudante.nome}`,
-      "info"
+      "info",
+      ipAddress
     );
 
     const designacoes = listarDesignacoesDoEstudante(estudante.id);
