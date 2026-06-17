@@ -142,7 +142,7 @@ if (process.env.TURSO_DATABASE_URL) {
       const statements = cleanSql
         .split(";")
         .map(s => s.trim())
-        .filter(s => s.length > 0);
+        .filter(s => s.length > 0 && !s.toUpperCase().startsWith("PRAGMA"));
         
       for (const statement of statements) {
         executeRemote(statement, []);
