@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { fecharDb } from "@/lib/db";
+import { fecharDb, DB_PATH, DATA_DIR } from "@/lib/db";
 import Database from "better-sqlite3";
 import fs from "fs";
-import path from "path";
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,9 +24,9 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     // Caminhos
-    const dataDir = path.join(process.cwd(), "data");
-    const dbPath = path.join(dataDir, "escola.db");
-    const tempDbPath = path.join(dataDir, "escola.db.temp");
+    const dataDir = DATA_DIR;
+    const dbPath = DB_PATH;
+    const tempDbPath = `${dbPath}.temp`;
 
     // Garante que o directório data existe
     if (!fs.existsSync(dataDir)) {

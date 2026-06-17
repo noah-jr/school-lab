@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+import { DB_PATH } from "@/lib/db";
 import fs from "fs";
-import path from "path";
 
 export async function GET() {
   try {
@@ -10,11 +10,7 @@ export async function GET() {
       return NextResponse.json({ erro: "Não autorizado" }, { status: 401 });
     }
 
-    // Tenta encontrar o db.sqlite ou data/escola.db
-    let dbPath = path.join(process.cwd(), "db.sqlite");
-    if (!fs.existsSync(dbPath)) {
-      dbPath = path.join(process.cwd(), "data", "escola.db");
-    }
+    const dbPath = DB_PATH;
 
     if (!fs.existsSync(dbPath)) {
       return NextResponse.json({ erro: "Ficheiro da base de dados não encontrado no servidor" }, { status: 404 });

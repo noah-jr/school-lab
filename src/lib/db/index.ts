@@ -2,13 +2,27 @@ import Database from "better-sqlite3";
 import fs from "fs"; 
 import path from "path";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const IS_VERCEL = !!process.env.VERCEL;
+const DATA_DIR = IS_VERCEL ? "/tmp" : path.join(process.cwd(), "data");
 const DB_PATH = path.join(DATA_DIR, "escola.db");
 const MIGRATIONS_DIR = path.join(process.cwd(), "migrations");
 
 // Garante que o directório data existe
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+// Se estiver na Vercel, copia a BD do bundle para a pasta /tmp de escrita
+if (IS_VERCEL) {
+  const bundleDbPath = path.join(process.cwd(), "data", "escola.db");
+  if (!fs.existsSync(DB_PATH) && fs.existsSync(bundleDbPath)) {
+    try {
+      fs.copyFileSync(bundleDbPath, DB_PATH);
+      console.log("[VERCEL] Base de dados copiada com sucesso para /tmp/escola.db");
+    } catch (e) {
+      console.error("[VERCEL] Erro ao copiar base de dados:", e);
+    }
+  }
 }
 
 // Instância singleton da DB
@@ -104,5 +118,5 @@ export function runMigrations(): void {
 }
 
 export const db = getDb();
-
+export { DB_PATH, DATA_DIR };
 export default getDb;
