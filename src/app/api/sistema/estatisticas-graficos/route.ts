@@ -71,7 +71,8 @@ export async function GET(req: NextRequest) {
     const evolucaoDesignacoes = db.prepare(`
       SELECT strftime(${formatoData}, d.criado_em) as mes, COUNT(*) as current
       FROM designacoes d
-      JOIN estudantes e ON d.estudante_id = e.id
+      JOIN turma_estudantes te ON d.turma_estudante_id = te.id
+      JOIN estudantes e ON te.estudante_id = e.id
       WHERE d.criado_em >= ${condicaoTempo}
       ${extraCongregacao}
       GROUP BY strftime(${formatoData}, d.criado_em)
