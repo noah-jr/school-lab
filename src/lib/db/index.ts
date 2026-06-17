@@ -25,11 +25,159 @@ if (IS_VERCEL) {
   }
 }
 
+// Cliente remoto síncrono para o Turso (Hrana v2 HTTP)
+import { execSync } from "child_process";
+
+function executeRemote(sql: string, args: any[]) {
+  const url = process.env.TURSO_DATABASE_URL;
+  const token = process.env.TURSO_AUTH_TOKEN;
+  
+  if (!url) throw new Error("TURSO_DATABASE_URL não está configurado.");
+  
+  // Mapear argumentos para o formato Hrana JSON
+  const formattedArgs = args.map(arg => {
+    if (arg === null || arg === undefined) return { type: "null" };
+    if (typeof arg === "string") return { type: "text", value: arg };
+    if (typeof arg === "number") {
+      if (Number.isInteger(arg)) return { type: "integer", value: String(arg) };
+      return { type: "float", value: arg };
+    }
+    if (typeof arg === "boolean") return { type: "integer", value: arg ? "1" : "0" };
+    if (Buffer.isBuffer(arg)) return { type: "blob", base64: arg.toString("base64") };
+    return { type: "text", value: String(arg) };
+  });
+
+  const payload = {
+    baton: null,
+    requests: [
+      {
+        type: "execute",
+        stmt: {
+          sql,
+          args: formattedArgs
+        }
+      },
+      {
+        type: "close"
+      }
+    ]
+  };
+
+  const payloadStr = JSON.stringify(payload).replace(/'/g, "'\\''");
+  
+  let apiUrl = url;
+  if (apiUrl.startsWith("libsql://")) {
+    apiUrl = "https://" + apiUrl.substring(9);
+  }
+  apiUrl = apiUrl.endsWith("/v2/pipeline") ? apiUrl : `${apiUrl.replace(/\/$/, "")}/v2/pipeline`;
+
+  const headers = `-H "Authorization: Bearer ${token}" -H "Content-Type: application/json"`;
+  const cmd = `curl -s -X POST ${headers} -d '${payloadStr}' "${apiUrl}"`;
+
+  let stdout = "";
+  try {
+    stdout = execSync(cmd, { encoding: "utf-8" });
+    const resp = JSON.parse(stdout);
+
+    if (resp.errors && resp.errors.length > 0) {
+      throw new Error(resp.errors[0].message || "Erro desconhecido no Turso");
+    }
+
+    const resultOk = resp.results[0];
+    if (resultOk.type === "error") {
+      throw new Error(resultOk.error.message);
+    }
+
+    const result = resultOk.response.result;
+    const cols = result.cols.map((c: any) => c.name);
+    const rows = result.rows.map((row: any[]) => {
+      const obj: any = {};
+      for (let i = 0; i < cols.length; i++) {
+        const colName = cols[i];
+        const cell = row[i];
+        if (cell.type === "null") {
+          obj[colName] = null;
+        } else if (cell.type === "text") {
+          obj[colName] = cell.value;
+        } else if (cell.type === "integer") {
+          obj[colName] = Number(cell.value);
+        } else if (cell.type === "float") {
+          obj[colName] = cell.value;
+        } else if (cell.type === "blob") {
+          obj[colName] = Buffer.from(cell.base64, "base64");
+        }
+      }
+      return obj;
+    });
+
+    return {
+      rows,
+      affected_row_count: result.affected_row_count || 0,
+      last_insert_rowid: Number(result.last_insert_rowid || 0)
+    };
+  } catch (e: any) {
+    console.error("[TURSO] Erro na execução da query:", e.message);
+    if (stdout) console.error("[TURSO] Resposta do servidor:", stdout);
+    throw e;
+  }
+}
+
+class RemoteStatement {
+  constructor(private sql: string) {}
+
+  private getArgs(args: any[]) {
+    if (args.length === 1 && Array.isArray(args[0])) {
+      return args[0];
+    }
+    return args;
+  }
+
+  run(...args: any[]) {
+    const res = executeRemote(this.sql, this.getArgs(args));
+    return {
+      changes: res.affected_row_count,
+      lastInsertRowid: res.last_insert_rowid
+    };
+  }
+
+  all(...args: any[]) {
+    const res = executeRemote(this.sql, this.getArgs(args));
+    return res.rows;
+  }
+
+  get(...args: any[]) {
+    const res = executeRemote(this.sql, this.getArgs(args));
+    return res.rows[0];
+  }
+}
+
+const remoteDb = {
+  prepare(sql: string) {
+    return new RemoteStatement(sql);
+  },
+  exec(sql: string) {
+    executeRemote(sql, []);
+  },
+  transaction(fn: any) {
+    return (...args: any[]) => fn(...args);
+  },
+  pragma(sql: string) {
+    return [];
+  },
+  close() {
+    // no-op
+  }
+};
+
 // Instância singleton da DB
-let _db: Database.Database | null = null;
+let _db: any = null;
 let _migrationsRun = false;
 
-export function getDb(): Database.Database {
+export function getDb(): any {
+  if (process.env.TURSO_DATABASE_URL) {
+    return remoteDb;
+  }
+
   if (_db) return _db;
 
   _db = new Database(DB_PATH, {
@@ -51,6 +199,9 @@ export function getDb(): Database.Database {
 }
 
 export function fecharDb(): void {
+  if (process.env.TURSO_DATABASE_URL) {
+    return;
+  }
   if (_db) {
     try {
       _db.close();
