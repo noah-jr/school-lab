@@ -161,24 +161,30 @@ function AnalyticalAreaChart({ data }: { data: { label: string, current: number 
   );
 }
 
-function AnalyticalDonutChart() {
-  // Using pure CSS conic gradient for a fast, responsive Donut chart
-  const slices = [
-    { label: "Nível A", pct: 45, color: "var(--success)" },
-    { label: "Nível C", pct: 30, color: "var(--info)" },
-    { label: "Nível B", pct: 25, color: "var(--warning)" },
+function AnalyticalDonutChart({ data }: { data: { label: string, value: number }[] }) {
+  // Calcular totais e percentagens
+  const total = data.reduce((acc, curr) => acc + curr.value, 0) || 1;
+  const processedSlices = data.map(d => ({
+    label: `Nível ${d.label}`,
+    pct: Math.round((d.value / total) * 100),
+    color: d.label.includes('A') ? "var(--success)" : d.label.includes('B') ? "var(--warning)" : "var(--info)"
+  })).sort((a, b) => b.pct - a.pct); // Ordenar por percentagem descendente
+  
+  const slices = processedSlices.length > 0 ? processedSlices : [
+    { label: "Sem dados", pct: 100, color: "var(--border)" }
   ];
 
-  const gradientString = `
-    var(--success) 0% 45%, 
-    var(--info) 45% 75%, 
-    var(--warning) 75% 100%
-  `;
+  let currentPct = 0;
+  const gradientParts = slices.map(s => {
+    const start = currentPct;
+    currentPct += s.pct;
+    return `${s.color} ${start}% ${currentPct}%`;
+  });
+  const gradientString = gradientParts.join(", ");
 
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", minHeight: "220px", gap: "32px" }}>
       <div style={{ position: "relative", width: "140px", height: "140px", borderRadius: "50%", background: `conic-gradient(${gradientString})` }}>
-        {/* Inner circle for Donut hole */}
         <div style={{ position: "absolute", top: "25%", left: "25%", width: "50%", height: "50%", background: "var(--bg-surface)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.05)" }}>
           <span style={{ fontSize: "16px", fontWeight: 700, color: "var(--text)" }}>100%</span>
         </div>
@@ -335,32 +341,44 @@ export default function DashboardPage() {
   const { data: portalMetrics } = useQuery({
     queryKey: ["portalMetrics"],
     queryFn: async () => {
-      const res = await api.get("/logs/portal-metrics");
+      const res = await api.get("/sistema/acessos-portais");
+      return res.data;
+    }
+  });
+
+  const { data: chartEstatisticas } = useQuery({
+    queryKey: ["chartEstatisticas"],
+    queryFn: async () => {
+      const res = await api.get("/sistema/estatisticas-graficos");
       return res.data;
     }
   });
 
   const percentConcluidas = stats?.total ? Math.round(((stats.concluidas || 0) / stats.total) * 100) : 0;
 
-  const chartData = useMemo(() => {
-    let data = [];
-    if (filtroTempo === "diario") {
-      data = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map(d => ({ label: d, current: Math.floor(Math.random() * 5), previous: Math.floor(Math.random() * 5) }));
-    } else if (filtroTempo === "semanal") {
-      data = ["Semana 1", "Semana 2", "Semana 3", "Semana 4"].map(d => ({ label: d, current: Math.floor(Math.random() * 15), previous: Math.floor(Math.random() * 15) }));
-    } else if (filtroTempo === "quinzenal") {
-      data = ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6"].map(d => ({ label: d, current: Math.floor(Math.random() * 25), previous: Math.floor(Math.random() * 25) }));
-    } else if (filtroTempo === "anual") {
-      data = ["2023", "2024", "2025", "2026"].map(d => ({ label: d, current: Math.floor(Math.random() * 150) + 50, previous: Math.floor(Math.random() * 150) + 50 }));
-    } else {
-      data = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"].map(d => ({ label: d, current: Math.floor(Math.random() * 40) + 10, previous: Math.floor(Math.random() * 40) + 10 }));
-    }
-    return data;
-  }, [filtroTempo, filtroCongregacao]);
+  const barData = useMemo(() => {
+    if (!chartEstatisticas?.evolucaoDesignacoes) return [];
+    return chartEstatisticas.evolucaoDesignacoes.map((d: any) => ({
+      label: d.mes,
+      current: d.current,
+      previous: Math.floor(d.current * 0.8) // Mocked previous period for comparison visual
+    }));
+  }, [chartEstatisticas]);
 
-  const modifier = filtroTempo === "diario" ? 0.05 : filtroTempo === "semanal" ? 0.15 : filtroTempo === "quinzenal" ? 0.3 : filtroTempo === "anual" ? 1.5 : 1;
-  const filteredEstudantes = estudantesReq ? Math.floor(estudantesReq.total * modifier) : "—";
-  const filteredTurmas = stats ? Math.floor(stats.total * modifier) : "—";
+  const areaData = useMemo(() => {
+    if (!chartEstatisticas?.evolucaoTurmas) return [];
+    return chartEstatisticas.evolucaoTurmas.map((d: any) => ({
+      label: d.mes,
+      current: d.current
+    }));
+  }, [chartEstatisticas]);
+
+  const donutData = useMemo(() => {
+    return chartEstatisticas?.distribuicaoOratoria || [];
+  }, [chartEstatisticas]);
+
+  const filteredEstudantes = estudantesReq ? estudantesReq.total : "—";
+  const filteredTurmas = stats ? stats.total : "—";
 
   return (
     <>
@@ -460,8 +478,8 @@ export default function DashboardPage() {
 
         {/* KPIs Grid */}
         <div className="stats-grid" style={{ marginBottom: "32px" }}>
-          <StatCard icon={BookOpen} label="Total de Turmas" value={loadingTurmas ? "—" : filteredTurmas} sub={`Registos (${filtroTempo})`} accent="var(--info)" />
-          <StatCard icon={Activity} label="Em Preparação" value={loadingTurmas ? "—" : Math.floor((stats?.rascunhos || 0) * modifier)} sub="Por atribuir designações" accent="var(--success)" />
+          <StatCard icon={BookOpen} label="Total de Turmas" value={loadingTurmas ? "—" : filteredTurmas} sub={`Registos Activos`} accent="var(--info)" />
+          <StatCard icon={Activity} label="Em Preparação" value={loadingTurmas ? "—" : (stats?.rascunhos || 0)} sub="Por atribuir designações" accent="var(--success)" />
           <StatCard icon={Users} label="Corpo Estudantil" value={estudantesReq ? filteredEstudantes : "—"} sub="Ativos no período" accent="var(--warning)" />
           <StatCard icon={Key} label="Acessos Ativos" value={utilizadoresReq ? utilizadoresReq.length : "—"} sub="Perfis no sistema" accent="var(--accent)" />
         </div>
@@ -477,7 +495,7 @@ export default function DashboardPage() {
               </h2>
             </div>
             <div style={{ padding: "16px 24px", flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <AnalyticalBarChart data={chartData} />
+              <AnalyticalBarChart data={barData} />
             </div>
           </div>
 
@@ -489,7 +507,7 @@ export default function DashboardPage() {
               </h2>
             </div>
             <div style={{ padding: "16px 24px", flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <AnalyticalDonutChart />
+              <AnalyticalDonutChart data={donutData} />
             </div>
           </div>
 
@@ -497,11 +515,11 @@ export default function DashboardPage() {
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "4px", display: "flex", flexDirection: "column" }}>
             <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h2 style={{ fontSize: "14px", fontWeight: 600, color: "var(--text)", display: "flex", alignItems: "center", gap: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                <TrendingUp size={16} color="var(--success)" /> Evolução de Turmas e Atividade
+                <TrendingUp size={16} color="var(--success)" /> Evolução de Turmas
               </h2>
             </div>
             <div style={{ padding: "16px 24px 24px", height: "280px" }}>
-              <AnalyticalAreaChart data={chartData} />
+              <AnalyticalAreaChart data={areaData.length > 0 ? areaData : [{label: "Sem dados", current: 0}]} />
             </div>
           </div>
 
