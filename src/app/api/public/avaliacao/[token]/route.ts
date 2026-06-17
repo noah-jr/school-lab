@@ -104,8 +104,7 @@ export async function PATCH(
           avaliado_pelo_viajante: 1,
         },
         ipAddress,
-        userAgent,
-        utilizadorId: `viajante:${tokenData.viajante_nome || "anonimo"}`
+        userAgent
       });
 
       // Registo no log geral do sistema

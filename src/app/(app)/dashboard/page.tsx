@@ -347,9 +347,9 @@ export default function DashboardPage() {
   });
 
   const { data: chartEstatisticas } = useQuery({
-    queryKey: ["chartEstatisticas"],
+    queryKey: ["chartEstatisticas", filtroTempo, filtroCongregacao],
     queryFn: async () => {
-      const res = await api.get("/sistema/estatisticas-graficos");
+      const res = await api.get(`/sistema/estatisticas-graficos?tempo=${filtroTempo}&congregacao=${filtroCongregacao}`);
       return res.data;
     }
   });
