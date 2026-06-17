@@ -7,7 +7,7 @@ import getDb from "./index";
 export interface AuditLogPayload {
   tabela: string;
   registoId: string;
-  accao: "INSERT" | "UPDATE" | "DELETE_SOFT" | "VIEW";
+  accao: "INSERT" | "UPDATE" | "DELETE" | "VIEW";
   dadosAntes?: unknown;
   dadosDepois?: unknown;
   utilizadorId?: string;

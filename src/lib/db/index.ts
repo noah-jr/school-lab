@@ -36,6 +36,18 @@ export function getDb(): Database.Database {
   return _db;
 }
 
+export function fecharDb(): void {
+  if (_db) {
+    try {
+      _db.close();
+    } catch (e) {
+      console.error("Erro ao fechar DB:", e);
+    }
+    _db = null;
+    _migrationsRun = false;
+  }
+}
+
 export function runMigrations(): void {
   const db = getDb();
 
@@ -90,5 +102,7 @@ export function runMigrations(): void {
     }
   }
 }
+
+export const db = getDb();
 
 export default getDb;

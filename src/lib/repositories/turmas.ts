@@ -75,14 +75,14 @@ export function criarTurma(
   const inserir = db.transaction(() => {
     db.prepare(`
       INSERT INTO turmas (id, numero_turma, nome, local_nome, local_cidade, pais, data_inicio, data_fim,
-        instrutor_a_nome, instrutor_b_nome, programa_id, status, observacoes, criado_por, criado_em, actualizado_em)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        instrutor_a_nome, instrutor_b_nome, programa_id, status, observacoes, criado_por, criado_em, actualizado_em, restricao_diaria)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `).run(
       id, input.numero_turma, input.nome, input.local_nome,
       input.local_cidade ?? null, input.pais, input.data_inicio, input.data_fim,
       input.instrutor_a_nome ?? null, input.instrutor_b_nome ?? null,
       input.programa_id ?? 'prog-eac-standard', input.status ?? "rascunho",
-      input.observacoes ?? null, utilizadorId ?? null, agora, agora
+      input.observacoes ?? null, utilizadorId ?? null, agora, agora, input.restricao_diaria ?? 1
     );
 
     criarAuditLog({
@@ -110,7 +110,7 @@ export function actualizarTurma(
   const COLUNAS_PERMITIDAS = [
     "numero_turma", "nome", "local_nome", "local_cidade", "pais",
     "data_inicio", "data_fim", "instrutor_a_nome", "instrutor_b_nome",
-    "programa_id", "status", "observacoes"
+    "programa_id", "status", "observacoes", "restricao_diaria"
   ];
   const campos = Object.keys(input).filter((k) => k !== "id" && COLUNAS_PERMITIDAS.includes(k));
   if (campos.length === 0) return antes!;

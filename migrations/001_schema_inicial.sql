@@ -187,7 +187,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   id            TEXT PRIMARY KEY,
   tabela        TEXT NOT NULL,
   registo_id    TEXT NOT NULL,
-  accao         TEXT NOT NULL CHECK(accao IN ('INSERT','UPDATE','DELETE_SOFT','VIEW')),
+  accao         TEXT NOT NULL CHECK(accao IN ('INSERT','UPDATE','DELETE','VIEW')),
   dados_antes   TEXT,                    -- JSON
   dados_depois  TEXT,                    -- JSON
   utilizador_id TEXT REFERENCES utilizadores(id),

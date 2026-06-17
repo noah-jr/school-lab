@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { obterTurmaEstudantePorToken, historicoEstudante } from "@/lib/repositories/estudantes";
 import { listarDesignacoesDoEstudante, confirmarDesignacao, recusarDesignacao } from "@/lib/repositories/designacoes";
+import getDb from "@/lib/db";
 
 // -------------------------------------------------------
 // GET /api/public/estudante/[token]
 // Valida o token e retorna os dados do estudante + designações
 // -------------------------------------------------------
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
   try {
@@ -20,6 +21,13 @@ export async function GET(
         { status: 404 }
       );
     }
+
+    const db = getDb();
+    db.prepare("INSERT INTO logs (acao, detalhe, severidade) VALUES (?, ?, ?)").run(
+      "acesso_portal_estudante",
+      `Acesso ao portal pelo estudante ${estudante.estudante_nome || estudante.nome}`,
+      "info"
+    );
 
     const designacoes = listarDesignacoesDoEstudante(estudante.id);
     const historico = historicoEstudante(estudante.estudante_id);

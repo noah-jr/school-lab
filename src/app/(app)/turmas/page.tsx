@@ -200,7 +200,7 @@ export default function TurmasPage() {
 
       <div className="page-body">
         {/* Filtros */}
-        <div className="flex gap-3 mb-6">
+        <div className="search-filter-row">
           <div className="flex items-center gap-2" style={{
             flex: 1, background: "var(--bg-surface)", border: "1px solid var(--border)",
             borderRadius: "var(--radius)", padding: "0 12px", maxWidth: 300,

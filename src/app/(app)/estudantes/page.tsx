@@ -240,8 +240,8 @@ export default function EstudantesPage() {
                           {est.nome}
                         </Link>
                       </td>
-                      <td className="text-muted text-sm" style={{ fontSize: "13px" }}>{(est as Record<string, unknown>).congregacao_nome as string ?? "—"}</td>
-                      <td className="font-mono text-muted" style={{ fontSize: "13px" }}>{(est as Record<string, unknown>).circuito_codigo as string ?? "—"}</td>
+                      <td className="text-muted text-sm" style={{ fontSize: "13px" }}>{(est as any).congregacao_nome ?? "—"}</td>
+                      <td className="font-mono text-muted" style={{ fontSize: "13px" }}>{(est as any).circuito_codigo ?? "—"}</td>
                       <td className="text-muted font-mono" style={{ fontSize: "12px" }}>{est.email_jwpub ?? "—"}</td>
                       <td className="font-mono" style={{ fontSize: "13px" }}>{est.telefone_principal ?? "—"}</td>
                       <td>

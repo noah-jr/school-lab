@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, ClipboardList,
   FileText, Settings, ChevronRight, LogOut, Sun, Moon, Shield,
-  Search, Bell, MessageSquare, User
+  Search, Bell, MessageSquare, User, Menu, Info
 } from "lucide-react";
 import { useUiStore } from "@/store";
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -25,6 +25,7 @@ const secondaryItems = [
   { label: "Caixa de Entrada", href: "/mensagens", icon: MessageSquare },
   { label: "Utilizadores (RBAC)", href: "/utilizadores", icon: Shield },
   { label: "Programas", href: "/programas", icon: BookOpen },
+  { label: "Sobre o Sistema", href: "/sobre", icon: Info },
   { label: "Configurações", href: "/configuracoes", icon: Settings },
 ];
 
@@ -156,6 +157,8 @@ function GlobalSearch() {
 export function Sidebar({ papel }: { papel?: string }) {
   const pathname = usePathname();
   const sidebarAberta = useUiStore((s) => s.sidebarAberta);
+  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+  const setSidebarAberta = useUiStore((s) => s.setSidebarAberta);
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -172,6 +175,15 @@ export function Sidebar({ papel }: { papel?: string }) {
     }
   }, []);
 
+  // Controlar fecho automático em mobile ao carregar/mudar página
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (window.innerWidth <= 768) {
+        setSidebarAberta(false);
+      }
+    }
+  }, [pathname, setSidebarAberta]);
+
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
@@ -183,67 +195,107 @@ export function Sidebar({ papel }: { papel?: string }) {
     href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
 
   return (
-    <aside className={`sidebar ${sidebarAberta ? "" : "collapsed"}`}>
-      {/* Logo */}
-      <div className="sidebar-logo" style={{ paddingLeft: '8px' }}>
-        <Logo size="md" subtitle="Gestão de Turmas" />
-      </div>
+    <>
+      {/* Mobile Backdrop */}
+      {sidebarAberta && (
+        <div 
+          className="sidebar-backdrop" 
+          onClick={() => setSidebarAberta(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(15, 23, 42, 0.3)",
+            backdropFilter: "blur(2px)",
+            zIndex: 45,
+          }}
+        />
+      )}
 
-      {/* Navegação principal */}
-      <nav className="sidebar-nav">
-        <span className="nav-section-label">Principal</span>
-        {navItems.filter(i => papel !== "secretaria" || ["Dashboard", "Turmas", "Estudantes"].includes(i.label)).map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`nav-item ${isActive(item.href) ? "active" : ""}`}
-            >
-              <Icon className="nav-icon" size={16} />
-              {item.label}
-            </Link>
-          );
-        })}
-
-        <div className="divider" style={{ margin: "12px 0" }} />
-        {papel !== "secretaria" && (
-          <>
-            <span className="nav-section-label">Sistema</span>
-            {secondaryItems.map((item) => {
-              const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`nav-item ${isActive(item.href) ? "active" : ""}`}
-            >
-              <Icon className="nav-icon" size={16} />
-              {item.label}
-            </Link>
-          );
-        })}
-          </>
-        )}
-      </nav>
-
-      {/* Footer */}
-      <div className="sidebar-footer">
-        <button onClick={handleLogout} className="nav-item" style={{ width: "100%", border: "none", background: "none", cursor: "pointer" }}>
-          <LogOut className="nav-icon text-danger" size={16} />
-          <span className="text-danger">Terminar Sessão</span>
-        </button>
-        
-        <button onClick={toggleTheme} className="nav-item" style={{ width: "100%", border: "none", background: "none", cursor: "pointer", marginTop: "8px" }}>
-          {theme === "light" ? <Moon className="nav-icon" size={16} /> : <Sun className="nav-icon" size={16} />}
-          <span>{theme === "light" ? "Modo Escuro" : "Modo Claro"}</span>
-        </button>
-
-        <div className="text-xs text-faint" style={{ padding: "4px 10px", marginTop: 12 }}>
-          v0.1.0 — School-Lab Angola
+      <aside className={`sidebar ${sidebarAberta ? "open" : "collapsed"}`}>
+        {/* Logo */}
+        <div 
+          className="sidebar-logo" 
+          style={{ 
+            paddingLeft: sidebarAberta ? '16px' : '0px', 
+            justifyContent: sidebarAberta ? 'flex-start' : 'center',
+            transition: 'padding var(--t-base)'
+          }}
+        >
+          <Logo size="md" showText={sidebarAberta} subtitle="Gestão de Turmas" />
         </div>
-      </div>
-    </aside>
+
+        {/* Navegação principal */}
+        <nav className="sidebar-nav">
+          {sidebarAberta && <span className="nav-section-label">Principal</span>}
+          {navItems.filter(i => papel !== "secretaria" || ["Dashboard", "Turmas", "Estudantes"].includes(i.label)).map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`nav-item ${isActive(item.href) ? "active" : ""}`}
+                title={!sidebarAberta ? item.label : undefined}
+                style={{ justifyContent: sidebarAberta ? "flex-start" : "center" }}
+              >
+                <Icon className="nav-icon" size={16} />
+                {sidebarAberta && <span>{item.label}</span>}
+              </Link>
+            );
+          })}
+
+          <div className="divider" style={{ margin: "12px 0" }} />
+          {papel !== "secretaria" && (
+            <>
+              {sidebarAberta && <span className="nav-section-label">Sistema</span>}
+              {secondaryItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`nav-item ${isActive(item.href) ? "active" : ""}`}
+                    title={!sidebarAberta ? item.label : undefined}
+                    style={{ justifyContent: sidebarAberta ? "flex-start" : "center" }}
+                  >
+                    <Icon className="nav-icon" size={16} />
+                    {sidebarAberta && <span>{item.label}</span>}
+                  </Link>
+                );
+              })}
+            </>
+          )}
+        </nav>
+
+        {/* Footer */}
+        <div className="sidebar-footer">
+          <button 
+            onClick={handleLogout} 
+            className="nav-item" 
+            style={{ width: "100%", border: "none", background: "none", cursor: "pointer", justifyContent: sidebarAberta ? "flex-start" : "center" }}
+            title={!sidebarAberta ? "Terminar Sessão" : undefined}
+          >
+            <LogOut className="nav-icon text-danger" size={16} />
+            {sidebarAberta && <span className="text-danger">Terminar Sessão</span>}
+          </button>
+          
+          <button 
+            onClick={toggleTheme} 
+            className="nav-item" 
+            style={{ width: "100%", border: "none", background: "none", cursor: "pointer", marginTop: "8px", justifyContent: sidebarAberta ? "flex-start" : "center" }}
+            title={!sidebarAberta ? (theme === "light" ? "Modo Escuro" : "Modo Claro") : undefined}
+          >
+            {theme === "light" ? <Moon className="nav-icon" size={16} /> : <Sun className="nav-icon" size={16} />}
+            {sidebarAberta && <span>{theme === "light" ? "Modo Escuro" : "Modo Claro"}</span>}
+          </button>
+
+          {sidebarAberta && (
+            <div className="text-xs text-faint" style={{ padding: "4px 10px", marginTop: 12 }}>
+              v0.1.0 — School-Lab Angola
+            </div>
+          )}
+        </div>
+      </aside>
+    </>
   );
 }
 
@@ -257,6 +309,7 @@ export function PageHeader({
   actions?: React.ReactNode;
 }) {
   const [showProfile, setShowProfile] = useState(false);
+  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
 
   const { data: notificacoesReq } = useQuery({
     queryKey: ["notificacoes"],
@@ -271,38 +324,59 @@ export function PageHeader({
 
   return (
     <header className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <div>
-        {breadcrumb && breadcrumb.length > 0 && (
-          <div className="flex items-center gap-2" style={{ marginBottom: 2 }}>
-            {breadcrumb.map((item, i) => (
-              <span key={i} className="flex items-center gap-2">
-                {i > 0 && <ChevronRight size={12} className="text-faint" />}
-                {item.href ? (
-                  <Link href={item.href} className="text-xs text-muted" style={{ transition: "color 0.2s" }} onMouseOver={e => e.currentTarget.style.color="var(--text)"} onMouseOut={e => e.currentTarget.style.color="var(--text-muted)"}>
-                    {item.label}
-                  </Link>
-                ) : (
-                  <span className="text-xs text-faint">{item.label}</span>
-                )}
-              </span>
-            ))}
-          </div>
-        )}
-        <h1 className="page-header-title">{title}</h1>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <button 
+          onClick={toggleSidebar} 
+          className="btn-hamburger" 
+          aria-label="Toggle Sidebar"
+          style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center", 
+            cursor: "pointer", 
+            color: "var(--text-muted)", 
+            padding: "6px", 
+            borderRadius: "var(--radius)",
+            transition: "background var(--t-fast)" 
+          }}
+          onMouseOver={e => e.currentTarget.style.background = "var(--bg-elevated)"}
+          onMouseOut={e => e.currentTarget.style.background = "transparent"}
+        >
+          <Menu size={18} />
+        </button>
+
+        <div>
+          {breadcrumb && breadcrumb.length > 0 && (
+            <div className="flex items-center gap-2" style={{ marginBottom: 2 }}>
+              {breadcrumb.map((item, i) => (
+                <span key={i} className="flex items-center gap-2">
+                  {i > 0 && <ChevronRight size={12} className="text-faint" />}
+                  {item.href ? (
+                    <Link href={item.href} className="text-xs text-muted" style={{ transition: "color 0.2s" }} onMouseOver={e => e.currentTarget.style.color="var(--text)"} onMouseOut={e => e.currentTarget.style.color="var(--text-muted)"}>
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span className="text-xs text-faint">{item.label}</span>
+                  )}
+                </span>
+              ))}
+            </div>
+          )}
+          <h1 className="page-header-title" style={{ margin: 0 }}>{title}</h1>
+        </div>
       </div>
       
       <div className="flex items-center gap-4">
         {/* Pesquisa Global */}
         <GlobalSearch />
 
-
         {/* Mensagens */}
-        <Link href="/mensagens" style={{ position: "relative", color: "var(--text-muted)" }}>
+        <Link href="/mensagens" style={{ position: "relative", color: "var(--text-muted)", display: "flex", alignItems: "center" }}>
           <MessageSquare size={18} />
         </Link>
 
         {/* Notificações */}
-        <Link href="/notificacoes" style={{ position: "relative", color: "var(--text-muted)" }}>
+        <Link href="/notificacoes" style={{ position: "relative", color: "var(--text-muted)", display: "flex", alignItems: "center" }}>
           <Bell size={18} />
           {naoLidas > 0 && (
             <span style={{ position: "absolute", top: -4, right: -4, background: "var(--danger)", color: "#fff", fontSize: 9, width: 14, height: 14, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", fontWeight: "bold" }}>

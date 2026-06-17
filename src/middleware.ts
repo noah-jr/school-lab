@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { checkRateLimit } from "./lib/rate-limit";
 
 // Rotas de página que requerem sessão autenticada
 const ROTAS_PROTEGIDAS = [
@@ -41,8 +42,29 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // ── 3. Rate Limiting para rotas públicas da API ─────────
+  if (path.startsWith("/api/public/")) {
+    let limit = 60;
+    if (path.startsWith("/api/public/upload")) {
+      limit = 5; // Limite baixo para uploads
+    } else if (path.startsWith("/api/public/feedback")) {
+      limit = 10; // Limite baixo para feedbacks para evitar spam
+    } else if (path.startsWith("/api/public/estudante")) {
+      limit = 30; // 30 confirmações/consultas por minuto
+    }
+
+    const rateLimit = checkRateLimit(request, limit);
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { erro: "Demasiados pedidos (Rate Limit Excedido). Por favor, tente novamente mais tarde." },
+        { status: 429 }
+      );
+    }
+  }
+
   return NextResponse.next();
 }
+
 
 export const config = {
   matcher: [

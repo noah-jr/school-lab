@@ -99,7 +99,9 @@ export interface Turma {
   criado_por?: string;
   criado_em: string;
   actualizado_em: string;
+  restricao_diaria?: number;
   // Calculados
+
   total_estudantes?: number;
   total_avaliados?: number;
 }
@@ -120,7 +122,11 @@ export interface TurmaEstudante {
   token_acesso?: string;
   criado_em: string;
   actualizado_em: string;
-  // Joins
+  // Joins e propriedades achatadas da query
+  estudante_nome?: string;
+  congregacao_nome?: string;
+  circuito_codigo?: string;
+  papel_ministerial?: string;
   estudante?: Estudante;
   designacoes?: Designacao[];
 }

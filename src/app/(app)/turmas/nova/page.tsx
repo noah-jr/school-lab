@@ -12,7 +12,8 @@ export default function NovaTurmaPage() {
   const { mutateAsync, isPending } = useCriarTurma();
   const [form, setForm] = useState<Partial<CriarTurmaInput>>({
     status: "rascunho", pais: "Angola", numero_turma: 1, nome: "1ª Turma EAC",
-    local_cidade: "", local_nome: "", instrutor_a_nome: "", instrutor_b_nome: ""
+    local_cidade: "", local_nome: "", instrutor_a_nome: "", instrutor_b_nome: "",
+    restricao_diaria: 1
   });
   const [nomeEditadoManualmente, setNomeEditadoManualmente] = useState(false);
 
@@ -69,7 +70,7 @@ export default function NovaTurmaPage() {
             {/* Secção 1: Identificação */}
             <div>
               <SectionTitle icon={Hash} title="Identificação da Turma" />
-              <div style={{ display: "grid", gridTemplateColumns: "100px 1fr 150px", gap: "16px" }}>
+              <div className="turma-identificacao-grid">
                 <div className="form-group">
                   <label className="form-label">Número *</label>
                   <input type="number" className="form-input" required min={1}
@@ -95,13 +96,24 @@ export default function NovaTurmaPage() {
                     <option value="activa">Activa</option>
                   </select>
                 </div>
+                
+                <div className="form-group" style={{ gridColumn: "span 3", marginTop: "8px" }}>
+                  <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13px", color: "var(--text)" }}>
+                    <input type="checkbox"
+                      checked={form.restricao_diaria !== 0}
+                      onChange={(e) => set("restricao_diaria", e.target.checked ? 1 : 0)}
+                      style={{ width: "16px", height: "16px", accentColor: "var(--accent)", cursor: "pointer" }}
+                    />
+                    <span>Restrição Diária (máximo 1 parte por dia por estudante no algoritmo de distribuição)</span>
+                  </label>
+                </div>
               </div>
             </div>
 
             {/* Secção 2: Localização e Datas */}
             <div>
               <SectionTitle icon={MapPin} title="Localização e Calendário" />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+              <div className="form-row" style={{ marginBottom: "16px" }}>
                 <div className="form-group">
                   <label className="form-label">Local (Edifício/Congregação) *</label>
                   <input className="form-input" required placeholder="ex: Salão de Assembleias de Viana"
@@ -115,7 +127,7 @@ export default function NovaTurmaPage() {
                     onChange={(e) => set("local_cidade", e.target.value)} />
                 </div>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Data de Início *</label>
                   <div style={{ position: "relative" }}>
@@ -144,7 +156,7 @@ export default function NovaTurmaPage() {
             {/* Secção 3: Equipa Instrutora */}
             <div>
               <SectionTitle icon={Users} title="Corpo Docente (Opcional)" />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Instrutor A</label>
                   <input className="form-input" placeholder="Nome do Instrutor Principal"

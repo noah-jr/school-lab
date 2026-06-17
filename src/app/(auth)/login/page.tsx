@@ -6,6 +6,8 @@ import Link from "next/link";
 import api from "@/lib/axios";
 import { Logo } from "@/components/ui/Logo";
 
+import { useEffect } from "react";
+
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -14,6 +16,14 @@ export default function LoginPage() {
   const [erro, setErro] = useState("");
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/public/visitor-log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pagina: "Página de Login" }),
+    }).catch(err => console.error("Erro ao registar log de visitante", err));
+  }, []);
 
   const handleVerificarEmail = async (e: React.FormEvent) => {
     e.preventDefault();

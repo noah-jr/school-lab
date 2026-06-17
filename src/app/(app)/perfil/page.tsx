@@ -99,7 +99,7 @@ export default function PerfilPage() {
       <PageHeader title="O Meu Perfil" breadcrumb={[{ label: "Perfil" }]} />
 
       <div className="page-body">
-        <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 24, alignItems: "start" }}>
+        <div className="profile-layout">
 
           {/* Cartão Lateral */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -187,7 +187,7 @@ export default function PerfilPage() {
             {/* Tab: Info */}
             {tabActiva === "info" && (
               <form onSubmit={handleSalvarInfo} style={{ padding: 24 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
+                <div className="profile-info-grid">
                   <div className="form-group">
                     <label className="form-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <User size={13} /> Nome Completo

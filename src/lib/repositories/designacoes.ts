@@ -52,7 +52,7 @@ export function gerarDesignacoes(turmaId: string, utilizadorId?: string): {
   db.prepare(`DELETE FROM designacoes WHERE turma_id = ? AND status = 'pendente'`).run(turmaId);
 
   // Obter partes do programa da turma (excluir NULO)
-  const turma = db.prepare("SELECT programa_id FROM turmas WHERE id = ?").get(turmaId) as { programa_id: string } | undefined;
+  const turma = db.prepare("SELECT programa_id, restricao_diaria FROM turmas WHERE id = ?").get(turmaId) as { programa_id: string; restricao_diaria: number } | undefined;
   if (!turma?.programa_id) throw new Error("Turma sem programa associado");
 
   const partes = db.prepare(`
@@ -112,7 +112,7 @@ export function gerarDesignacoes(turmaId: string, utilizadorId?: string): {
         // Filtrar estudantes compatíveis
         const compativeis = estudantes.filter(est => {
           if (comboLocal.includes(est.id)) return false; // Já está no combo
-          if (desigPorDia.get(est.id)?.has(dia)) return false; // Já tem parte neste dia
+          if (turma.restricao_diaria === 1 && desigPorDia.get(est.id)?.has(dia)) return false; // Já tem parte neste dia (se restrição ativa)
           const niveisPermitidos = COMPATIBILIDADE[est.nivel_oratoria] ?? [];
           return niveisPermitidos.includes(p.nivel_requerido);
         });

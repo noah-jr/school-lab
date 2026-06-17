@@ -23,6 +23,14 @@ export default function LandingPage() {
       }
     };
     window.addEventListener("scroll", handleScroll);
+
+    // Registar visita pública do internauta
+    fetch("/api/public/visitor-log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pagina: "Apresentação (Landing Page)" }),
+    }).catch(err => console.error("Erro ao registar log de visitante", err));
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 

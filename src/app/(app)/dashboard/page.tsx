@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/layout/Sidebar";
 import { useTurmas } from "@/hooks/useTurmas";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
-import { BookOpen, Users, Plus, Activity, GraduationCap, Video, Shield, ChevronRight, FileText, Key, UserCheck, Filter, BarChart2, PieChart, TrendingUp } from "lucide-react";
+import { BookOpen, Users, Plus, Activity, GraduationCap, Video, Shield, ChevronRight, FileText, Key, UserCheck, Filter, BarChart2, PieChart, TrendingUp, Globe } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import { useState, useMemo } from "react";
@@ -201,6 +201,113 @@ function AnalyticalDonutChart() {
 
 // ----------------------------------------------------
 
+function PortalAccessChart({ metrics }: { metrics: any }) {
+  const [periodo, setPeriodo] = useState<"diaria" | "semanal" | "mensal">("diaria");
+
+  const currentData = useMemo(() => {
+    if (!metrics) return [];
+    return metrics[periodo] || [];
+  }, [metrics, periodo]);
+
+  const maxVal = useMemo(() => {
+    if (currentData.length === 0) return 5;
+    return Math.max(...currentData.map((d: any) => d.acessos), 5);
+  }, [currentData]);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
+      {/* Resumo de Acessos */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
+        <div style={{ display: "flex", gap: "16px" }}>
+          <div>
+            <span style={{ fontSize: "11px", color: "var(--text-faint)", textTransform: "uppercase", fontWeight: 600 }}>Portal Alunos</span>
+            <span style={{ fontSize: "18px", fontWeight: 700, color: "var(--accent)", display: "block", marginTop: "2px", fontFamily: "var(--font-mono)" }}>
+              {metrics?.totais?.estudante || 0}
+            </span>
+          </div>
+          <div style={{ borderLeft: "1px solid var(--border)", paddingLeft: "16px" }}>
+            <span style={{ fontSize: "11px", color: "var(--text-faint)", textTransform: "uppercase", fontWeight: 600 }}>Portal Viajantes</span>
+            <span style={{ fontSize: "18px", fontWeight: 700, color: "var(--success)", display: "block", marginTop: "2px", fontFamily: "var(--font-mono)" }}>
+              {metrics?.totais?.viajante || 0}
+            </span>
+          </div>
+          <div style={{ borderLeft: "1px solid var(--border)", paddingLeft: "16px" }}>
+            <span style={{ fontSize: "11px", color: "var(--text-faint)", textTransform: "uppercase", fontWeight: 600 }}>Internautas</span>
+            <span style={{ fontSize: "18px", fontWeight: 700, color: "var(--warning)", display: "block", marginTop: "2px", fontFamily: "var(--font-mono)" }}>
+              {metrics?.totais?.internauta || 0}
+            </span>
+          </div>
+        </div>
+        
+        {/* Selector de Período */}
+        <div style={{ display: "flex", gap: "4px", background: "var(--bg-elevated)", padding: "2px", borderRadius: "4px", border: "1px solid var(--border)" }}>
+          {(["diaria", "semanal", "mensal"] as const).map(p => (
+            <button
+              key={p}
+              onClick={() => setPeriodo(p)}
+              style={{
+                padding: "4px 8px",
+                fontSize: "11px",
+                fontWeight: 600,
+                border: "none",
+                background: periodo === p ? "var(--bg-surface)" : "transparent",
+                color: periodo === p ? "var(--text)" : "var(--text-muted)",
+                borderRadius: "3px",
+                cursor: "pointer",
+                boxShadow: periodo === p ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                transition: "all 0.15s ease"
+              }}
+            >
+              {p === "diaria" ? "Diário" : p === "semanal" ? "Semanal" : "Mensal"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Gráfico */}
+      <div style={{ flex: 1, minHeight: "150px", display: "flex", alignItems: "flex-end", gap: "8px", borderBottom: "1px solid var(--border)", paddingBottom: "8px" }}>
+        {currentData.length === 0 ? (
+          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-faint)", fontSize: "13px" }}>
+            Sem dados de tráfego registados
+          </div>
+        ) : (
+          currentData.slice(-10).map((d: any, i: number) => {
+            const h = (d.acessos / maxVal) * 100;
+            let label = d.data || d.semana || d.mes || "";
+            if (periodo === "diaria" && label.includes("-")) {
+              const pts = label.split("-");
+              label = `${pts[2]}/${pts[1]}`;
+            } else if (periodo === "semanal" && label.includes("-W")) {
+              label = "S" + label.split("-W")[1];
+            } else if (periodo === "mensal" && label.includes("-")) {
+              const pts = label.split("-");
+              const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+              label = meses[parseInt(pts[1]) - 1] || label;
+            }
+
+            return (
+              <div key={i} style={{ flex: 1, height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontSize: "10px", fontWeight: 600, color: "var(--text-muted)" }}>{d.acessos}</span>
+                <div style={{
+                  width: "100%",
+                  height: `${h}%`,
+                  background: "linear-gradient(to top, var(--accent-faint) 20%, var(--accent) 100%)",
+                  borderRadius: "2px 2px 0 0",
+                  minHeight: d.acessos > 0 ? "4px" : "0px",
+                  transition: "height 0.3s ease"
+                }} title={`${d.data || d.semana || d.mes}: ${d.acessos} acessos`} />
+                <span style={{ fontSize: "9px", fontWeight: 500, color: "var(--text-faint)", textTransform: "uppercase", whiteSpace: "nowrap" }}>{label}</span>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------
+
 export default function DashboardPage() {
   const { data: user } = useAuth();
   const { data: turmasData, isLoading: loadingTurmas } = useTurmas();
@@ -222,6 +329,14 @@ export default function DashboardPage() {
     queryFn: async () => {
       const res = await api.get("/utilizadores");
       return res.data.data;
+    }
+  });
+
+  const { data: portalMetrics } = useQuery({
+    queryKey: ["portalMetrics"],
+    queryFn: async () => {
+      const res = await api.get("/logs/portal-metrics");
+      return res.data;
     }
   });
 
@@ -263,20 +378,10 @@ export default function DashboardPage() {
         }
       />
 
-      <div className="page-body" style={{ maxWidth: "1600px", margin: "0 auto", padding: "24px" }}>
+      <div className="page-body">
 
         {/* Banner Institucional */}
-        <div style={{
-          marginBottom: "24px",
-          padding: "32px 40px",
-          borderRadius: "4px",
-          background: "var(--bg-elevated)",
-          color: "var(--text)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          border: "1px solid var(--border)"
-        }}>
+        <div className="banner-institucional">
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
               <Shield size={20} color="var(--info)" />
@@ -290,7 +395,7 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <div style={{ display: "none", '@media(min-width: 900px)': { display: "flex" }, gap: "24px" }}>
+          <div className="banner-stats">
             <div style={{ background: "var(--bg-surface)", padding: "16px 24px", borderRadius: "4px", border: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "20px", minWidth: "220px" }}>
               <div style={{ fontSize: "36px", fontWeight: "bold", fontFamily: "var(--font-mono)", color: "var(--success)", lineHeight: 1 }}>
                 {stats?.activas || 0}
@@ -313,22 +418,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Filtros Analíticos Globais */}
-        <div style={{
-          marginBottom: "24px",
-          padding: "16px 24px",
-          background: "var(--bg-surface)",
-          border: "1px solid var(--border)",
-          borderRadius: "4px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}>
+        <div className="analiticos-header">
           <div style={{ display: "flex", alignItems: "center", gap: "12px", color: "var(--text)" }}>
             <Filter size={18} color="var(--text-muted)" />
             <span style={{ fontSize: "14px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Filtros Analíticos</span>
           </div>
 
-          <div style={{ display: "flex", gap: "16px" }}>
+          <div className="analiticos-filters">
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <label style={{ fontSize: "12px", color: "var(--text-faint)", fontWeight: 600, textTransform: "uppercase" }}>Congregação</label>
               <select
@@ -363,7 +459,7 @@ export default function DashboardPage() {
         </div>
 
         {/* KPIs Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "24px", marginBottom: "32px", minWidth: "100%" }}>
+        <div className="stats-grid" style={{ marginBottom: "32px" }}>
           <StatCard icon={BookOpen} label="Total de Turmas" value={loadingTurmas ? "—" : filteredTurmas} sub={`Registos (${filtroTempo})`} accent="var(--info)" />
           <StatCard icon={Activity} label="Em Preparação" value={loadingTurmas ? "—" : Math.floor((stats?.rascunhos || 0) * modifier)} sub="Por atribuir designações" accent="var(--success)" />
           <StatCard icon={Users} label="Corpo Estudantil" value={estudantesReq ? filteredEstudantes : "—"} sub="Ativos no período" accent="var(--warning)" />
@@ -371,7 +467,7 @@ export default function DashboardPage() {
         </div>
 
         {/* SECÇÃO DOS GRÁFICOS ESTATÍSTICOS AVANÇADOS */}
-        <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "24px", marginBottom: "32px" }}>
+        <div className="charts-grid">
 
           {/* Gráfico de Barras - Esquerda Superior */}
           <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "4px", display: "flex", flexDirection: "column" }}>
@@ -397,8 +493,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Gráfico de Área - Ocupa a largura total da linha inferior dos gráficos */}
-          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "4px", display: "flex", flexDirection: "column", gridColumn: "1 / -1" }}>
+          {/* Gráfico de Área */}
+          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "4px", display: "flex", flexDirection: "column" }}>
             <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h2 style={{ fontSize: "14px", fontWeight: 600, color: "var(--text)", display: "flex", alignItems: "center", gap: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 <TrendingUp size={16} color="var(--success)" /> Evolução de Turmas e Atividade
@@ -409,10 +505,22 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          {/* Gráfico de Acessos aos Portais */}
+          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "4px", display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h2 style={{ fontSize: "14px", fontWeight: 600, color: "var(--text)", display: "flex", alignItems: "center", gap: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                <Globe size={16} color="var(--accent)" /> Acessos aos Portais Públicos
+              </h2>
+            </div>
+            <div style={{ padding: "16px 24px 24px", height: "280px" }}>
+              <PortalAccessChart metrics={portalMetrics} />
+            </div>
+          </div>
+
         </div>
 
         {/* Layout Inferior: Módulos, Tabela e Procedimentos */}
-        <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "32px", alignItems: "start" }}>
+        <div className="dashboard-bottom-grid">
 
           <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
 
@@ -421,7 +529,7 @@ export default function DashboardPage() {
               <h2 style={{ fontSize: "14px", fontWeight: 600, color: "var(--text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "16px", paddingLeft: "4px", borderLeft: "3px solid var(--text)" }}>
                 Módulos do Sistema
               </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div className="modules-grid">
                 <ModuleCard
                   title="Catálogo de Turmas"
                   desc="Gestão de calendário, datas, e agrupamento congregacional."
@@ -483,7 +591,7 @@ export default function DashboardPage() {
               ) : !turmasData?.data?.length ? (
                 <div style={{ padding: "32px", textAlign: "center", color: "var(--text-faint)", fontSize: "13px" }}>Nenhum registo encontrado.</div>
               ) : (
-                <div style={{ width: "100%", overflowX: "auto" }}>
+                <div className="table-wrapper">
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
                     <thead style={{ background: "var(--bg-surface)", borderBottom: "1px solid var(--border)" }}>
                       <tr>

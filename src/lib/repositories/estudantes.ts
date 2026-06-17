@@ -274,8 +274,8 @@ export function obterTurmaEstudantePorToken(token: string) {
 // -------------------------------------------------------
 export function garantirTokensDaTurma(turmaId: string) {
   const db = getDb();
-  const estudantesSemToken = db.prepare(`SELECT id FROM turma_estudantes WHERE turma_id = ? AND token_acesso IS NULL`).all(turmaId) as {id: string}[];
-  
+  const estudantesSemToken = db.prepare(`SELECT id FROM turma_estudantes WHERE turma_id = ? AND token_acesso IS NULL`).all(turmaId) as { id: string }[];
+
   if (estudantesSemToken.length > 0) {
     db.transaction(() => {
       const stmt = db.prepare(`UPDATE turma_estudantes SET token_acesso = ? WHERE id = ?`);

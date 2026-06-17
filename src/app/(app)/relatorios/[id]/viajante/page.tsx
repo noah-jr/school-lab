@@ -21,7 +21,7 @@ export default function RelatorioViajantePage({ params }: { params: Promise<{ id
   if (isTurmaLoading || loading) return <div style={{ padding: 32 }}>A compilar relatório...</div>;
   if (!turmaReq) return <div>Turma não encontrada</div>;
 
-  const turma = turmaReq.data;
+  const turma = turmaReq;
 
   return (
     <div style={{ padding: "0 24px" }}>

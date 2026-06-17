@@ -1,7 +1,7 @@
 "use client";
 import { use, useState } from "react";
 import { PageHeader } from "@/components/layout/Sidebar";
-import { useTurma, useTurmaEstudantes, useGerarDesignacoes } from "@/hooks/useTurmas";
+import { useTurma, useTurmaEstudantes, useGerarDesignacoes, useActualizarTurma } from "@/hooks/useTurmas";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
@@ -183,6 +183,7 @@ export default function TurmaDetailPage({ params }: { params: Promise<{ id: stri
   const { data: estudantes } = useTurmaEstudantes(id);
   const { mutateAsync: gerar, isPending: gerandoDesig } = useGerarDesignacoes(id);
   const { data: user } = useAuth();
+  const actualizar = useActualizarTurma(id);
   
   const isSecretaria = user?.papel === "secretaria";
 
@@ -238,6 +239,24 @@ export default function TurmaDetailPage({ params }: { params: Promise<{ id: stri
             <span className="stat-label">Local</span>
             <span style={{ fontSize: 13, fontWeight: 600 }}>{turma.local_nome}</span>
             {turma.local_cidade && <span className="stat-sub">{turma.local_cidade}</span>}
+          </div>
+          <div className="stat-card">
+            <span className="stat-label">Restrição Diária</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+              <input
+                type="checkbox"
+                checked={(turma as any).restricao_diaria !== 0}
+                disabled={isSecretaria || actualizar.isPending}
+                onChange={(e) => {
+                  actualizar.mutate({ restricao_diaria: e.target.checked ? 1 : 0 });
+                }}
+                style={{ width: 15, height: 15, accentColor: "var(--accent)", cursor: "pointer" }}
+              />
+              <span style={{ fontSize: 13, fontWeight: 600 }}>
+                {(turma as any).restricao_diaria !== 0 ? "Activa" : "Inactiva"}
+              </span>
+            </div>
+            <span className="stat-sub">Máx. 1 parte por dia por estudante</span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Avaliação Viajante</span>

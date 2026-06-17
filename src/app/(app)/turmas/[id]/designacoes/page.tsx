@@ -94,7 +94,7 @@ export default function TurmaDesignacoesPage({ params }: { params: Promise<{ id:
               <div key={dia} className="card" style={{ padding: 0, overflow: "hidden" }}>
                 <div className="card-header" style={{ padding: "16px 20px", background: "var(--bg-elevated)", marginBottom: 0 }}>
                   <span className="card-title" style={{ textTransform: "capitalize" }}>{dia}</span>
-                  <span className="badge badge-activa">{partes.filter(p => p.designacao_id).length} / {partes.length} preenchidas</span>
+                  <span className="badge badge-activa">{partes.filter((p: any) => p.designacao_id).length} / {partes.length} preenchidas</span>
                 </div>
                 {partes.length === 0 ? (
                   <div style={{ padding: "24px", textAlign: "center", color: "var(--text-faint)", fontSize: 13 }}>

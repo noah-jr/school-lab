@@ -52,7 +52,7 @@ export default function ConfiguracoesPage() {
         {/* Painel Geral */}
         <section>
           <SectionTitle icon={Globe} title="Geral e Identidade" desc="Configure os detalhes da sua instituição e preferências regionais." />
-          <div className="card" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+          <div className="card" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px" }}>
             <div className="form-group">
               <label className="form-label">Nome da Instituição</label>
               <input className="form-input" defaultValue="Escola para Anciãos e Servos Ministeriais" disabled={!isAdmin} />

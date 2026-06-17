@@ -22,7 +22,7 @@ export default function RelatorioProgramaPage({ params }: { params: Promise<{ id
   if (isTurmaLoading || loading) return <div style={{ padding: 32 }}>A compilar relatório de programa...</div>;
   if (!turmaReq) return <div>Turma não encontrada</div>;
 
-  const turma = turmaReq.data;
+  const turma = turmaReq;
 
   const diasDaSemana = ["segunda", "terca", "quarta", "quinta", "sexta"];
   const nomesDias: Record<string, string> = {

@@ -25,8 +25,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const CAMPOS_PERMITIDOS = [
       "numero_turma", "nome", "local_nome", "local_cidade", "pais",
       "data_inicio", "data_fim", "instrutor_a_nome", "instrutor_b_nome",
-      "programa_id", "status", "observacoes",
+      "programa_id", "status", "observacoes", "restricao_diaria",
     ];
+
 
     const body = await req.json();
     const input: Record<string, unknown> = {};

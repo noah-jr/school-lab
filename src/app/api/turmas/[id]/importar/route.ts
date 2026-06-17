@@ -70,7 +70,9 @@ export async function POST(
           email_jwpub: est.cca_email,
           telefone_principal: est.telefone,
           congregacao_id: congregacaoId,
-          papel_ministerial: "anciao" // Padrão
+          papel_ministerial: "anciao", // Padrão
+          fotografia: "",
+          activo: 1
         });
       }
 
@@ -80,8 +82,8 @@ export async function POST(
       if (!jaInscrito) {
         adicionarEstudanteATurma(turmaId, estudanteDb.id, {
           numero_lista: est.numero_lista,
-          idade: est.idade ? parseFloat(est.idade) : null,
-          anos_batismo: est.anos_batismo ? parseFloat(est.anos_batismo) : null,
+          idade: est.idade ? parseFloat(est.idade) : undefined,
+          anos_batismo: est.anos_batismo ? parseFloat(est.anos_batismo) : undefined,
           cca_email: est.cca_email
         });
         inseridos++;

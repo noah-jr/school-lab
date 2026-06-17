@@ -256,7 +256,7 @@ export default function EstudanteDetailPage({ params }: { params: Promise<{ id: 
         </div>
 
         {/* Módulo Duplo: Histórico e Documentos */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24 }}>
           
           {/* Histórico de Turmas */}
           <div className="card" style={{ padding: 0, overflow: "hidden", alignSelf: "start" }}>
