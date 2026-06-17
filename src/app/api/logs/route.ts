@@ -44,11 +44,14 @@ export async function GET(req: Request) {
       queryParams = [likeQ, likeQ, likeQ];
     }
 
+    // Migração: garantir coluna ip_address (tolerante a falha se já existir)
+    try { db.prepare("ALTER TABLE logs ADD COLUMN ip_address TEXT").run(); } catch (_) {}
+
     const totalRow = db.prepare(`SELECT COUNT(*) as total ${baseQuery}`).get(...countParams) as any;
     const total = totalRow.total;
 
     const logs = db.prepare(`
-      SELECT l.*, l.ip_address, u.nome AS utilizador_nome 
+      SELECT l.*, u.nome AS utilizador_nome 
       ${baseQuery}
       ORDER BY l.id DESC
       LIMIT ? OFFSET ?

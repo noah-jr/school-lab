@@ -3,8 +3,134 @@ import { PageHeader } from "@/components/layout/Sidebar";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { Activity, ShieldAlert, RefreshCw, AlertTriangle, Info, ShieldCheck } from "lucide-react";
+import { Activity, ShieldAlert, RefreshCw, AlertTriangle, Info, ShieldCheck, X, Monitor, Clock, User, MapPin, FileText, Tag } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+
+function LogModal({ log, onClose }: { log: any; onClose: () => void }) {
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [onClose]);
+
+  const severidadeColor: Record<string, string> = {
+    info: "var(--info)",
+    warning: "var(--warning)",
+    error: "var(--danger)",
+    success: "var(--success)",
+  };
+  const cor = severidadeColor[log.severidade] || "var(--info)";
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
+        zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px"
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "8px",
+          width: "100%", maxWidth: "560px", boxShadow: "0 24px 64px rgba(0,0,0,0.4)",
+          animation: "fadeSlideIn 0.15s ease"
+        }}
+      >
+        {/* Header */}
+        <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: cor, boxShadow: `0 0 8px ${cor}` }} />
+            <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--text)" }}>Detalhes do Registo</span>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-faint)", padding: "4px", borderRadius: "4px" }}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+          {/* Ação */}
+          <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+            <Tag size={16} color="var(--text-faint)" style={{ marginTop: 2, flexShrink: 0 }} />
+            <div>
+              <div style={{ fontSize: "11px", color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>Ação</div>
+              <code style={{ fontSize: "13px", color: cor, fontFamily: "var(--font-mono)", background: "var(--bg-elevated)", padding: "3px 8px", borderRadius: "3px", border: `1px solid ${cor}33` }}>
+                {log.acao}
+              </code>
+            </div>
+          </div>
+
+          {/* Detalhes */}
+          <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+            <FileText size={16} color="var(--text-faint)" style={{ marginTop: 2, flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: "11px", color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>Detalhes</div>
+              <p style={{ fontSize: "13px", color: "var(--text)", lineHeight: 1.6, background: "var(--bg-elevated)", padding: "10px 12px", borderRadius: "4px", border: "1px solid var(--border)", margin: 0, wordBreak: "break-word" }}>
+                {log.detalhe}
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            {/* Utilizador */}
+            <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+              <User size={16} color="var(--text-faint)" style={{ marginTop: 2, flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: "11px", color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>Utilizador</div>
+                <div style={{ fontSize: "13px", color: "var(--text)" }}>{log.utilizador_nome || "Sistema"}</div>
+              </div>
+            </div>
+
+            {/* Severidade */}
+            <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+              <Monitor size={16} color="var(--text-faint)" style={{ marginTop: 2, flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: "11px", color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>Severidade</div>
+                <span style={{ fontSize: "12px", fontWeight: 600, color: cor, background: `${cor}18`, border: `1px solid ${cor}44`, padding: "2px 8px", borderRadius: "3px", textTransform: "uppercase" }}>
+                  {log.severidade}
+                </span>
+              </div>
+            </div>
+
+            {/* IP */}
+            <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+              <MapPin size={16} color="var(--text-faint)" style={{ marginTop: 2, flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: "11px", color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>IP de Origem</div>
+                {log.ip_address ? (
+                  <code style={{ fontSize: "12px", color: "var(--text-muted)", fontFamily: "var(--font-mono)", background: "var(--bg-elevated)", padding: "2px 8px", borderRadius: "3px", border: "1px solid var(--border)" }}>
+                    {log.ip_address}
+                  </code>
+                ) : (
+                  <span style={{ fontSize: "12px", color: "var(--text-faint)" }}>—</span>
+                )}
+              </div>
+            </div>
+
+            {/* Data */}
+            <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+              <Clock size={16} color="var(--text-faint)" style={{ marginTop: 2, flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: "11px", color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>Data / Hora</div>
+                <div style={{ fontSize: "12px", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+                  {new Date(log.criado_em).toLocaleString("pt-PT")}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: "16px 24px", borderTop: "1px solid var(--border)", display: "flex", justifyContent: "flex-end" }}>
+          <button onClick={onClose} className="btn btn-ghost" style={{ padding: "6px 16px", fontSize: "13px" }}>
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function LogsPage() {
   const { data: user } = useAuth();
@@ -13,6 +139,7 @@ export default function LogsPage() {
   const [q, setQ] = useState("");
   const [debounceQ, setDebounceQ] = useState("");
   const [pagina, setPagina] = useState(1);
+  const [logSelecionado, setLogSelecionado] = useState<any>(null);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -95,16 +222,22 @@ export default function LogsPage() {
                 <thead style={{ background: "var(--bg-elevated)", borderBottom: "1px solid var(--border)" }}>
                   <tr>
                     <th style={{ padding: "12px 24px", width: 60 }}></th>
-                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px" }}>Data / Hora</th>
-                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px" }}>Ação</th>
-                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px" }}>Utilizador</th>
-                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px" }}>IP de Origem</th>
-                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px" }}>Detalhes</th>
+                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px", textAlign: "left" }}>Data / Hora</th>
+                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px", textAlign: "left" }}>Ação</th>
+                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px", textAlign: "left" }}>Utilizador</th>
+                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px", textAlign: "left" }}>IP de Origem</th>
+                    <th style={{ color: "var(--text-muted)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", padding: "12px 16px", textAlign: "left" }}>Detalhes</th>
                   </tr>
                 </thead>
                 <tbody>
                   {logs.map((log: any) => (
-                    <tr key={log.id} style={{ borderBottom: "1px solid var(--border)", transition: "background 0.15s" }} onMouseOver={e => e.currentTarget.style.background = "var(--bg-elevated)"} onMouseOut={e => e.currentTarget.style.background = "transparent"}>
+                    <tr
+                      key={log.id}
+                      onClick={() => setLogSelecionado(log)}
+                      style={{ borderBottom: "1px solid var(--border)", transition: "background 0.15s", cursor: "pointer" }}
+                      onMouseOver={e => e.currentTarget.style.background = "var(--bg-elevated)"}
+                      onMouseOut={e => e.currentTarget.style.background = "transparent"}
+                    >
                       <td style={{ padding: "12px 24px", textAlign: "center" }}>
                         {getLogIcon(log.severidade)}
                       </td>
@@ -119,14 +252,14 @@ export default function LogsPage() {
                       </td>
                       <td style={{ padding: "12px 16px" }}>
                         {log.ip_address ? (
-                          <span style={{ fontSize: "12px", fontFamily: "var(--font-mono)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "3px", padding: "2px 6px", color: "var(--text-muted)" }}>
+                          <code style={{ fontSize: "12px", fontFamily: "var(--font-mono)", background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "3px", padding: "2px 6px", color: "var(--text-muted)" }}>
                             {log.ip_address}
-                          </span>
+                          </code>
                         ) : (
                           <span style={{ fontSize: "11px", color: "var(--text-faint)" }}>—</span>
                         )}
                       </td>
-                      <td style={{ fontSize: "12px", color: "var(--text-muted)", fontFamily: "var(--font-mono)", maxWidth: "260px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", padding: "12px 16px" }}>
+                      <td style={{ fontSize: "12px", color: "var(--text-muted)", fontFamily: "var(--font-mono)", maxWidth: "220px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", padding: "12px 16px" }}>
                         {log.detalhe}
                       </td>
                     </tr>
@@ -163,8 +296,12 @@ export default function LogsPage() {
             </div>
           )}
         </div>
-
       </div>
+
+      {/* Modal de Detalhes */}
+      {logSelecionado && (
+        <LogModal log={logSelecionado} onClose={() => setLogSelecionado(null)} />
+      )}
     </>
   );
 }
