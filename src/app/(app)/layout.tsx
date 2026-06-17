@@ -2,6 +2,15 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { GlobalNotifications } from "@/components/ui/GlobalNotifications";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+  },
+};
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
