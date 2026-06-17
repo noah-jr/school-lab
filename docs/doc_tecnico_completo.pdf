@@ -1,0 +1,969 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 5407
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F2 20 Tf
+23. TL
+0.118 0.161 0.231 rg
+56.6929133858267775 771.0238582677164914 Td
+(Documentação Técnica Completa: School-Lab) Tj
+ET
+0.89 0.91 0.94 RG
+1.4173228346456694 w
+56.6929133858267775 742.6774015748030706 m
+538.5826771653544256 742.6774015748030706 l
+S
+BT
+/F1 10 Tf
+11.5 TL
+0.392 0.455 0.545 rg
+56.6929133858267775 700.15771653543311 Td
+(Gerado automaticamente pelo sistema School-Lab) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 657.6380314960629221 Td
+(Este documento descreve detalhadamente a arquitetura, a infraestrutura de dados, o modelo de segurança,) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 642.0474803149605805 Td
+(os fluxos de trabalho principais e o sistema de observabilidade da plataforma **School-Lab** \(versão) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 626.4569291338582389 Td
+(Angola\).) Tj
+ET
+BT
+/F2 13 Tf
+14.9499999999999993 TL
+0.118 0.161 0.231 rg
+56.6929133858267775 591.0238582677164914 Td
+(1. Visão Geral do Sistema) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 568.346692913385823 Td
+(O **School-Lab** é uma plataforma de alta fidelidade desenhada especificamente para simplificar a gestão) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 552.7561417322833677 Td
+(de turmas, oradores, programas de designação e auditoria escolar de forma descentralizada.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.118 0.161 0.231 rg
+56.6929133858267775 522.9923622047243725 Td
+(Princípios Fundamentais:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 505.9844881889763428 Td
+(1. **Privacidade Local Absoluta:** Os dados sensíveis da instituição são guardados exclusivamente no) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 490.3939370078739444 Td
+(próprio servidor/máquina local através de um banco de dados SQLite encriptado \(sem nuvem pública de) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 474.8033858267716028 Td
+(terceiros\).) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 453.5435433070865656 Td
+(2. **Avaliação sem Contas:** Avaliadores externos \(superintendentes de circuito\) conseguem avaliar) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 437.952992125984224 Td
+(oradores através de links temporários encriptados de uso único, sem necessidade de registo na plataforma.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 416.69314960629913 Td
+(3. **Auditoria Estrita:** Todas as ações sensíveis são registadas de forma imutável para conformidade) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 401.1025984251967884 Td
+(institucional.) Tj
+ET
+BT
+/F2 13 Tf
+14.9499999999999993 TL
+0.118 0.161 0.231 rg
+56.6929133858267775 365.6695275590550409 Td
+(2. Arquitetura Tecnológica) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 342.9923622047243725 Td
+(A plataforma utiliza uma stack moderna, unificada e otimizada para execução local eficiente:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 321.7325196850392786 Td
+(• **Frontend:** Next.js 15 \(App Router\), React 19, Lucide Icons, e CSS Customizado de Alto) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 306.1419685039369369 Td
+(Desempenho \(sem TailwindCSS por padrão, garantindo isolamento estético e controlo de performance\).) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 290.5514173228345953 Td
+(• **Base de Dados:** SQLite acedido através da biblioteca nativa `better-sqlite3`, configurado com o) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 274.9608661417322537 Td
+(modo **WAL \(Write-Ahead Logging\)** para suporte concorrente robusto.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 259.3703149606297984 Td
+(• **Estado e Comunicação:** React Query \(TanStack Query v5\) para cache de dados do servidor, Axios) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 243.7797637795274568 Td
+(para requisições assíncronas e Zustand para gestão de estado local da interface \(ex: controlo do menu) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 228.1892125984251152 Td
+(lateral\).) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 212.5986614173227736 Td
+(• **Geração de Relatórios:** Bibliotecas client-side/server-side `jsPDF` e `jspdf-autotable` para) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 197.0081102362204319 Td
+(compilação instantânea de folhas de presença e programas mensais.) Tj
+ET
+BT
+/F2 13 Tf
+14.9499999999999993 TL
+0.118 0.161 0.231 rg
+56.6929133858267775 167.2443307086613231 Td
+(3. Modelo de Dados & Migrações) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 144.5671653543306547 Td
+(A base de dados é estruturada de forma relacional. O sistema controla a evolução do esquema através de) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 128.9766141732283131 Td
+(migrações SQL numeradas executadas na inicialização.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.118 0.161 0.231 rg
+56.6929133858267775 99.2128346456692043 Td
+(Principais Tabelas:) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.58 0.639 0.722 rg
+467.7165354330709306 28.3466929133857093 Td
+(Página 1 de 3) Tj
+ET
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 6060
+>>
+stream
+1.4173228346456694 w
+0.89 0.91 0.94 RG
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 785.1970866141732586 Td
+(#### A. Tabela `utilizadores`) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 763.9372440944881646 Td
+(Controla os operadores administrativos da plataforma.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 742.6774015748030706 Td
+(• `id` \(TEXT PRIMARY KEY\) - UUID do utilizador.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 727.086850393700729 Td
+(• `nome` \(TEXT\), `email` \(TEXT UNIQUE\), `senha_hash` \(TEXT\).) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 711.4962992125983874 Td
+(• `papel` \(TEXT\) - `admin`, `secretaria` ou `instrutor` \(Controlo de Acesso Baseado em Perfis - RBAC\).) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 695.9057480314960458 Td
+(• `precisa_mudar_senha` \(INTEGER DEFAULT 0\) - Flag ativada na criação do utilizador ou em resets) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 680.3151968503937042 Td
+(administrativos.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 664.7246456692912489 Td
+(#### B. Tabela `mensagens`) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 643.4648031496062686 Td
+(Mensagens internas trocadas entre operadores e feedbacks externos.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 622.2049606299212883 Td
+(• `id` \(INTEGER PRIMARY KEY AUTOINCREMENT\).) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 606.614409448818833 Td
+(• `remetente_id` \(TEXT, Foreign Key\) / `remetente_nome` \(TEXT\) / `remetente_email` \(TEXT\).) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 591.0238582677164914 Td
+(• `destinatario_id` \(TEXT, Foreign Key\) - `NULL` para mensagens enviadas ao Admin/Geral.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 575.4333070866141497 Td
+(• `assunto` \(TEXT\), `conteudo` \(TEXT\).) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 559.8427559055116944 Td
+(• `lida` \(INTEGER DEFAULT 0\) - `0` para não lida, `1` para lida.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 544.2522047244094665 Td
+(• `ocultada` \(INTEGER DEFAULT 0\) - Arquivamento/ocultação pelo utilizador sem eliminação da base de) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 528.6616535433070112 Td
+(dados.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 513.0711023622046696 Td
+(#### C. Tabela `logs`) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 491.8112598425196325 Td
+(Auditoria de ações do sistema e tráfego de rede.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 470.5514173228345953 Td
+(• `id` \(INTEGER PRIMARY KEY AUTOINCREMENT\).) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 454.9608661417322537 Td
+(• `utilizador_id` \(TEXT\) - `NULL` se anónimo \(internauta\).) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 439.3703149606298552 Td
+(• `acao` \(TEXT\) - Ex: `acesso_portal_estudante`, `acesso_portal_viajante`, `acesso_internauta`,) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 423.7797637795275136 Td
+(`turma_criada`.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 408.1892125984251152 Td
+(• `detalhes` \(TEXT\) - JSON com metadados adicionais.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 392.5986614173227736 Td
+(• `criado_em` \(TEXT DEFAULT CURRENT_TIMESTAMP\).) Tj
+ET
+BT
+/F2 13 Tf
+14.9499999999999993 TL
+0.118 0.161 0.231 rg
+56.6929133858267775 362.8348818897637216 Td
+(4. Segurança & Autenticação) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 340.1577165354329964 Td
+(A segurança baseia-se num sistema de sessão estatal baseado em cookies HTTP-Only e encriptação AES.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.118 0.161 0.231 rg
+56.6929133858267775 310.3939370078740012 Td
+(Mecanismos de Proteção:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 293.3860629921258578 Td
+(1. **Middleware de Proteção \(src/middleware.ts\):**) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 272.1262204724408775 Td
+(Intercepta rotas restritas e garante que utilizadores não autenticados sejam redirecionados para o login. As) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 256.5356692913385359 Td
+(rotas sob `/api/public/` e páginas informativas \(ex: `/sobre`\) são explicitamente desmarcadas para acesso) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 240.9451181102361943 Td
+(anónimo controlado.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 219.6852755905511003 Td
+(2. **Forçar Alteração de Senha:**) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 198.4254330708660063 Td
+(Se `precisa_mudar_senha` estiver a `1`, qualquer rota interna do utilizador redireciona automaticamente para) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 182.8348818897636647 Td
+(`/mudar-senha`, bloqueando o painel de controlo até que uma senha forte seja definida.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 161.5750393700786844 Td
+(3. **Limitação de Pedidos \(Rate Limiting\):**) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 140.3151968503935905 Td
+(Mecanismo em memória que bloqueia temporariamente IPs com excesso de pedidos falhados nas APIs) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 124.7246456692912489 Td
+(públicas \(evitando ataques de força bruta aos tokens de avaliação\).) Tj
+ET
+BT
+/F2 13 Tf
+14.9499999999999993 TL
+0.118 0.161 0.231 rg
+56.6929133858267775 89.2915748031495013 Td
+(5. Fluxos de Trabalho Principais \(Core Workflows\)) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.58 0.639 0.722 rg
+467.7165354330709306 28.3466929133857093 Td
+(Página 2 de 3) Tj
+ET
+endstream
+endobj
+7 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 8 0 R
+>>
+endobj
+8 0 obj
+<<
+/Length 4341
+>>
+stream
+1.4173228346456694 w
+0.89 0.91 0.94 RG
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.118 0.161 0.231 rg
+56.6929133858267775 776.69314960629913 Td
+(A. Rastreamento e Telemetria \(Observabilidade\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 759.6852755905511003 Td
+(O sistema possui 3 fontes principais de monitorização de tráfego, consolidadas no dashboard:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 738.42543307086612 Td
+(1. **Acessos de Estudantes:** Gravados no momento em que um estudante acede ao seu portal individual) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 722.8348818897637784 Td
+(via token de acesso.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 701.5750393700786844 Td
+(2. **Acessos de Viajantes:** Registados quando um superintendente de circuito abre a ficha de avaliação) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 685.9844881889763428 Td
+(temporária da turma.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 664.7246456692912489 Td
+(3. **Acessos de Internautas:** Capturados através do endpoint `/api/public/visitor-log` em páginas sem login) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 649.1340944881889072 Td
+(\(Página Inicial, Login, Sobre o Sistema\).) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.118 0.161 0.231 rg
+56.6929133858267775 619.3703149606299121 Td
+(B. Gestão de Backups & Recuperação) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 602.3624409448818824 Td
+(Implementado em `src/app/api/backups/`:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 581.1025984251967884 Td
+(• **Exportação \(/export\):** Realiza uma cópia limpa do ficheiro `escola.db` em modo seguro e comprime a) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 565.5120472440944468 Td
+(estrutura.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 549.9214960629921052 Td
+(• **Recuperação \(/recover\):** Permite o upload de um backup anterior. O sistema interrompe conexões) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 534.3309448818897636 Td
+(ativas com a DB SQLite \(WAL\), substitui o ficheiro da base de dados física e executa o script de) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+68.031496062992133 518.7403937007873083 Td
+(migrações para alinhar o esquema.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.118 0.161 0.231 rg
+56.6929133858267775 494.6459055118109518 Td
+(C. Geração de PDF & Programas) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 477.6380314960629221 Td
+(Permite a exportação em PDF de tabelas complexas como a lista de oradores e cronogramas mensais de) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 462.0474803149605805 Td
+(discursos de forma limpa, respeitando formatação local e margens de impressão standard A4.) Tj
+ET
+BT
+/F2 13 Tf
+14.9499999999999993 TL
+0.118 0.161 0.231 rg
+56.6929133858267775 426.614409448818833 Td
+(6. Configuração e Variáveis de Ambiente) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 403.9372440944881077 Td
+(As configurações são geridas por um ficheiro `.env` na raiz do projeto:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 382.6774015748030706 Td
+(```env) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 361.4175590551180335 Td
+(DATABASE_URL="file:./data/escola.db") Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 340.1577165354329964 Td
+(JWT_SECRET="chave-secreta-de-producao") Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 318.8978740157480161 Td
+(NODE_ENV="production") Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 297.6380314960629221 Td
+(```) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 276.3781889763778281 Td
+(A base de dados é armazenada fisicamente em `./data/escola.db` dentro do diretório do projeto, garantindo) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 260.7876377952754865 Td
+(facilidade de migração ou backup manual total em discos externos de segurança.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.58 0.639 0.722 rg
+467.7165354330709306 28.3466929133857093 Td
+(Página 3 de 3) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R 7 0 R ]
+/Count 3
+>>
+endobj
+9 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+10 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+12 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+21 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+22 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 9 0 R
+/F2 10 0 R
+/F3 11 0 R
+/F4 12 0 R
+/F5 13 0 R
+/F6 14 0 R
+/F7 15 0 R
+/F8 16 0 R
+/F9 17 0 R
+/F10 18 0 R
+/F11 19 0 R
+/F12 20 0 R
+/F13 21 0 R
+/F14 22 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+23 0 obj
+<<
+/Producer (jsPDF 2.5.2)
+/CreationDate (D:20260617130051+01'00')
+>>
+endobj
+24 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 25
+0000000000 65535 f 
+0000016390 00000 n 
+0000018223 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000005611 00000 n 
+0000005748 00000 n 
+0000011860 00000 n 
+0000011997 00000 n 
+0000016459 00000 n 
+0000016584 00000 n 
+0000016715 00000 n 
+0000016849 00000 n 
+0000016987 00000 n 
+0000017111 00000 n 
+0000017240 00000 n 
+0000017372 00000 n 
+0000017508 00000 n 
+0000017636 00000 n 
+0000017763 00000 n 
+0000017892 00000 n 
+0000018025 00000 n 
+0000018127 00000 n 
+0000018475 00000 n 
+0000018561 00000 n 
+trailer
+<<
+/Size 25
+/Root 24 0 R
+/Info 23 0 R
+/ID [ <BA3894CD276653025D40F7448B815B67> <BA3894CD276653025D40F7448B815B67> ]
+>>
+startxref
+18665
+%%EOF
