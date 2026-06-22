@@ -46,19 +46,13 @@ export default function ImprimirDesignacoesPage({ params }: { params: Promise<{ 
 
   return (
     <div style={{ background: "#f3f4f6", minHeight: "100vh", fontFamily: "serif" }}>
-      <div className="no-print" style={{ padding: "20px", display: "flex", flexWrap: "wrap", gap: 16, background: "#fff", borderBottom: "1px solid #e5e7eb", justifyContent: "center", alignItems: "center" }}>
+      <div className="no-print" style={{ padding: "20px", display: "flex", gap: 16, background: "#fff", borderBottom: "1px solid #e5e7eb", justifyContent: "center" }}>
         <Link href={`/turmas/${id}/designacoes`} className="btn btn-ghost">
           <ArrowLeft size={16} /> Voltar
         </Link>
-        <button className="btn btn-ghost" onClick={copiarParaGoogleDocs}>
-          <Copy size={16} /> Copiar p/ Google Docs
-        </button>
         <button className="btn btn-primary" onClick={() => window.print()}>
           <Printer size={16} /> Imprimir / Guardar como PDF
         </button>
-        <div style={{ width: "100%", textAlign: "center", fontSize: "13px", color: "#6b7280", marginTop: "4px" }}>
-          💡 <strong>Dica:</strong> Pode clicar em qualquer texto (nome, orientações, etc.) na folha abaixo para editá-lo diretamente antes de imprimir!
-        </div>
       </div>
 
       <div className="print-container" style={{ padding: "40px 20px" }}>
@@ -71,6 +65,7 @@ export default function ImprimirDesignacoesPage({ params }: { params: Promise<{ 
                className="print-page" 
                style={{ 
                  background: "#fff", 
+                 color: "#000",
                  maxWidth: 800, 
                  margin: "0 auto 40px", 
                  padding: "80px 60px",
@@ -128,7 +123,7 @@ export default function ImprimirDesignacoesPage({ params }: { params: Promise<{ 
                       suppressContentEditableWarning={true}
                       style={{ textAlign: "justify", fontStyle: "italic", color: "#444", outline: "none" }}
                     >
-                      Prepare bem a sua designação e respeite rigorosamente o tempo estipulado. Qualquer dúvida, entre em contacto com os instrutores.
+                      Por favor, prepare a sua designação conforme as instruções do manual da escola para a unidade correspondente. Respeite rigorosamente o tempo estipulado.
                     </td>
                   </tr>
                   <tr>
@@ -154,6 +149,12 @@ export default function ImprimirDesignacoesPage({ params }: { params: Promise<{ 
       </div>
 
       <style dangerouslySetInnerHTML={{__html: `
+        .print-page, .print-page td, .print-page th, .print-page p, .print-page h1, .print-page h2, .print-page h3, .print-page span, .print-page div {
+          color: #000;
+        }
+        .print-page table tbody tr:hover {
+          background: transparent !important;
+        }
         @media print {
           body * { visibility: hidden; }
           .print-container, .print-container * { visibility: visible; }

@@ -35,9 +35,6 @@ export default function ImprimirFichaEstudantePage({ params }: { params: Promise
         <a href={`/api/estudantes/${id}/ficha/pdf`} target="_blank" className="btn btn-primary" style={{ display: "flex", gap: "8px" }}>
           <Printer size={16} /> Exportar / Descarregar PDF
         </a>
-        <div style={{ width: "100%", textAlign: "center", fontSize: "13px", color: "#6b7280", marginTop: "4px" }}>
-          💡 <strong>Dica:</strong> Pode clicar em qualquer texto na ficha abaixo para editá-lo diretamente antes de imprimir!
-        </div>
       </div>
 
       {/* Papel do Relatório A4 */}
@@ -160,13 +157,18 @@ export default function ImprimirFichaEstudantePage({ params }: { params: Promise
       <style dangerouslySetInnerHTML={{ __html: `
         .report-a4 {
           background: white;
-          color: black;
           padding: 40px;
           border-radius: 4px;
           box-shadow: 0 4px 12px rgba(0,0,0,0.1);
           max-width: 900px;
           margin: 0 auto 40px;
           font-family: sans-serif;
+        }
+        .report-a4, .report-a4 td, .report-a4 th, .report-a4 p, .report-a4 h1, .report-a4 h2, .report-a4 h3, .report-a4 span, .report-a4 div {
+          color: black;
+        }
+        .report-table tbody tr:hover {
+          background: transparent !important;
         }
 
         .report-table {
