@@ -27,7 +27,7 @@ export default function RelatorioViajantePage({ params }: { params: Promise<{ id
     <div style={{ padding: "0 24px" }}>
       
       {/* Botões do UI - Serão ocultos na impressão */}
-      <div className="no-print" style={{ marginBottom: "24px", display: "flex", gap: "12px", background: "var(--bg-surface)", padding: "16px", borderRadius: "8px", border: "1px solid var(--border)", alignItems: "center" }}>
+      <div className="no-print" style={{ marginBottom: "24px", display: "flex", flexWrap: "wrap", gap: "12px", background: "var(--bg-surface)", padding: "16px", borderRadius: "8px", border: "1px solid var(--border)", alignItems: "center" }}>
         <Link href="/relatorios" className="btn btn-ghost"><ArrowLeft size={16} /> Voltar</Link>
         <div style={{ flex: 1 }} />
         <span style={{ fontSize: "13px", color: "var(--text-muted)", marginRight: "12px" }}>
@@ -39,6 +39,9 @@ export default function RelatorioViajantePage({ params }: { params: Promise<{ id
         <a href={`/api/turmas/${id}/relatorios/viajante/pdf`} target="_blank" className="btn btn-primary" style={{ display: "flex", gap: "8px" }}>
           <Printer size={16} /> Exportar / Descarregar PDF
         </a>
+        <div style={{ width: "100%", textAlign: "center", fontSize: "13px", color: "#6b7280", marginTop: "4px" }}>
+          💡 <strong>Dica:</strong> Pode clicar em qualquer texto (nome, nível, etc.) na folha abaixo para editá-lo diretamente antes de imprimir!
+        </div>
       </div>
 
       {/* Papel do Relatório A4 */}
@@ -46,10 +49,18 @@ export default function RelatorioViajantePage({ params }: { params: Promise<{ id
         
         {/* Cabeçalho Oficial */}
         <div style={{ textAlign: "center", marginBottom: "32px", borderBottom: "2px solid #222", paddingBottom: "16px" }}>
-          <h1 style={{ fontSize: "22px", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 8px 0" }}>
-            Escola para Anciãos e Servos Ministeriais
+          <h1 
+            contentEditable={true} 
+            suppressContentEditableWarning={true}
+            style={{ fontSize: "22px", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 8px 0", outline: "none" }}
+          >
+            Escola para Anciãos de Congregação
           </h1>
-          <h2 style={{ fontSize: "16px", fontWeight: "normal", margin: "0 0 4px 0" }}>
+          <h2 
+            contentEditable={true} 
+            suppressContentEditableWarning={true}
+            style={{ fontSize: "16px", fontWeight: "normal", margin: "0 0 4px 0", outline: "none" }}
+          >
             Relatório de Avaliação para o Superintendente de Circuito
           </h2>
         </div>
@@ -57,12 +68,12 @@ export default function RelatorioViajantePage({ params }: { params: Promise<{ id
         {/* Informações da Turma */}
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "32px", fontSize: "13px" }}>
           <div>
-            <p><strong>Turma:</strong> {turma.numero_turma}ª - {turma.nome}</p>
-            <p><strong>Local:</strong> {turma.local_nome} {turma.local_cidade && `(${turma.local_cidade})`}</p>
+            <p contentEditable={true} suppressContentEditableWarning={true} style={{ outline: "none" }}><strong>Turma:</strong> {turma.numero_turma}ª - {turma.nome}</p>
+            <p contentEditable={true} suppressContentEditableWarning={true} style={{ outline: "none" }}><strong>Local:</strong> {turma.local_nome} {turma.local_cidade && `(${turma.local_cidade})`}</p>
           </div>
           <div style={{ textAlign: "right" }}>
-            <p><strong>Início:</strong> {new Date(turma.data_inicio).toLocaleDateString("pt-PT")}</p>
-            <p><strong>Término:</strong> {new Date(turma.data_fim).toLocaleDateString("pt-PT")}</p>
+            <p contentEditable={true} suppressContentEditableWarning={true} style={{ outline: "none" }}><strong>Início:</strong> {new Date(turma.data_inicio).toLocaleDateString("pt-PT")}</p>
+            <p contentEditable={true} suppressContentEditableWarning={true} style={{ outline: "none" }}><strong>Término:</strong> {new Date(turma.data_fim).toLocaleDateString("pt-PT")}</p>
           </div>
         </div>
 
@@ -83,11 +94,11 @@ export default function RelatorioViajantePage({ params }: { params: Promise<{ id
             ) : (
               estudantes.map((e) => (
                 <tr key={e.id}>
-                  <td style={{ textAlign: "center" }}>{e.numero_lista || "—"}</td>
-                  <td style={{ fontWeight: 600 }}>{e.estudante_nome}</td>
-                  <td>{e.papel_ministerial === "anciao" ? "Ancião" : "Servo M."}</td>
-                  <td>{e.congregacao_nome || "—"}</td>
-                  <td style={{ textAlign: "center", fontWeight: "bold" }}>{e.nivel_oratoria || "S/A"}</td>
+                  <td contentEditable={true} suppressContentEditableWarning={true} style={{ textAlign: "center", outline: "none" }}>{e.numero_lista || "—"}</td>
+                  <td contentEditable={true} suppressContentEditableWarning={true} style={{ fontWeight: 600, outline: "none" }}>{e.estudante_nome}</td>
+                  <td contentEditable={true} suppressContentEditableWarning={true} style={{ outline: "none" }}>{e.papel_ministerial === "anciao" ? "Ancião" : "Servo M."}</td>
+                  <td contentEditable={true} suppressContentEditableWarning={true} style={{ outline: "none" }}>{e.congregacao_nome || "—"}</td>
+                  <td contentEditable={true} suppressContentEditableWarning={true} style={{ textAlign: "center", fontWeight: "bold", outline: "none" }}>{e.nivel_oratoria || "S/A"}</td>
                 </tr>
               ))
             )}
@@ -99,12 +110,12 @@ export default function RelatorioViajantePage({ params }: { params: Promise<{ id
           <div style={{ textAlign: "center", width: "250px" }}>
             <div style={{ borderBottom: "1px solid #000", marginBottom: "8px", height: "30px" }}></div>
             <p>Assinatura do Instrutor Principal</p>
-            <p style={{ fontWeight: "bold", marginTop: "4px" }}>{turma.instrutor_a_nome || "_________________"}</p>
+            <p contentEditable={true} suppressContentEditableWarning={true} style={{ fontWeight: "bold", marginTop: "4px", outline: "none" }}>{turma.instrutor_a_nome || "_________________"}</p>
           </div>
           <div style={{ textAlign: "center", width: "250px" }}>
             <div style={{ borderBottom: "1px solid #000", marginBottom: "8px", height: "30px" }}></div>
             <p>Assinatura do Instrutor Auxiliar</p>
-            <p style={{ fontWeight: "bold", marginTop: "4px" }}>{turma.instrutor_b_nome || "_________________"}</p>
+            <p contentEditable={true} suppressContentEditableWarning={true} style={{ fontWeight: "bold", marginTop: "4px", outline: "none" }}>{turma.instrutor_b_nome || "_________________"}</p>
           </div>
         </div>
 

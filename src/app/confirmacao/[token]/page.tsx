@@ -187,13 +187,13 @@ export default function ConfirmacaoPublicaPage({
   const { token } = use(params);
   const qc = useQueryClient();
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["confirmacao", token],
     queryFn: async () => {
       const res = await fetch(`/api/public/estudante/${token}`);
       if (!res.ok) {
         const d = await res.json();
-        throw new Error(d.erro || "Erro ao carregar.");
+        throw Object.assign(new Error(d.erro || "Erro ao carregar."), { status: res.status });
       }
       return res.json() as Promise<{
         data: {
@@ -254,7 +254,7 @@ export default function ConfirmacaoPublicaPage({
         <Logo size="sm" showText={false} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontWeight: 800, fontSize: 15, color: "#111827", letterSpacing: "-0.02em" }}>
-            School-Lab — Portal do Aluno
+            EAC — Portal do Aluno
           </div>
         </div>
       </header>
@@ -276,10 +276,10 @@ export default function ConfirmacaoPublicaPage({
           }}>
             <AlertTriangle size={48} color="#dc2626" style={{ margin: "0 auto 16px" }} />
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#111827", marginBottom: 8 }}>
-              Link Inválido
+              {(error as any)?.status === 410 ? "Acesso Expirado" : "Link Inválido"}
             </h2>
-            <p style={{ color: "#6b7280", fontSize: 15 }}>
-              Este link pessoal não foi encontrado. Por favor, solicite um novo link aos instrutores da escola.
+            <p style={{ color: "#6b7280", fontSize: 15, maxWidth: 400, margin: "0 auto" }}>
+              {(error as any)?.message || "Este link pessoal não foi encontrado. Por favor, solicite um novo link aos instrutores da escola."}
             </p>
           </div>
         )}
@@ -300,7 +300,7 @@ export default function ConfirmacaoPublicaPage({
                 Olá, {estudante?.estudante_nome}!
               </h1>
               <p style={{ fontSize: 15, color: "#4b5563", marginBottom: 20 }}>
-                Bem-vindo ao portal da <strong>{estudante?.numero_turma}ª Turma</strong> da Escola de Anciãos.
+                Bem-vindo ao portal da <strong>{estudante?.numero_turma}ª Turma</strong> da Escola para Anciãos de Congregação.
               </p>
               
               {pendentes.length > 1 && (
@@ -319,55 +319,20 @@ export default function ConfirmacaoPublicaPage({
             </div>
 
             {/* Ficha & Avaliação Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px" }}>
-              {/* Perfil / Ficha */}
-              <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e5e7eb", padding: "20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#111827", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-                  <FileText size={18} color="#1e40af" /> A Minha Ficha
-                </h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12, fontSize: 14, color: "#4b5563" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #f3f4f6", paddingBottom: 8 }}>
-                    <span style={{ color: "#6b7280" }}>Privilégio</span>
-                    <span style={{ fontWeight: 600, textTransform: "capitalize", color: "#111827" }}>{estudante?.papel_ministerial?.replace("_", " ")}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #f3f4f6", paddingBottom: 8 }}>
-                    <span style={{ color: "#6b7280" }}>Congregação</span>
-                    <span style={{ fontWeight: 600, color: "#111827", textAlign: "right" }}>{estudante?.congregacao_nome || "N/A"}<br/><span style={{ fontSize: 12, fontWeight: 400, color: "#9ca3af" }}>{estudante?.circuito_codigo ? `Circuito ${estudante.circuito_codigo}` : ""}</span></span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #f3f4f6", paddingBottom: 8 }}>
-                    <span style={{ color: "#6b7280" }}>Idade</span>
-                    <span style={{ fontWeight: 600, color: "#111827" }}>{estudante?.idade ? `${estudante.idade} anos` : "N/A"}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ color: "#6b7280" }}>Anos de Batismo</span>
-                    <span style={{ fontWeight: 600, color: "#111827" }}>{estudante?.anos_batismo || "N/A"}</span>
-                  </div>
+            {/* Ficha do Estudante — apenas dados não confidenciais */}
+            <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e5e7eb", padding: "20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: "#111827", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+                <FileText size={18} color="#1e40af" /> A Minha Ficha
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, fontSize: 14, color: "#4b5563" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #f3f4f6", paddingBottom: 8 }}>
+                  <span style={{ color: "#6b7280" }}>Privilégio</span>
+                  <span style={{ fontWeight: 600, textTransform: "capitalize", color: "#111827" }}>{estudante?.papel_ministerial?.replace("_", " ")}</span>
                 </div>
-              </div>
-
-              {/* Avaliação */}
-              <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e5e7eb", padding: "20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#111827", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-                  <Star size={18} color="#eab308" /> Avaliação do Viajante
-                </h3>
-                {estudante?.avaliado_pelo_viajante === 1 ? (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, height: "130px" }}>
-                    <div style={{ fontSize: 48, fontWeight: 900, color: "#111827", lineHeight: 1 }}>{estudante.nivel_oratoria}</div>
-                    <span style={{ fontSize: 13, color: "#16a34a", background: "#dcfce7", padding: "4px 12px", borderRadius: 99, fontWeight: 600 }}>
-                      Avaliação Concluída
-                    </span>
-                    {estudante.data_avaliacao && (
-                      <span style={{ fontSize: 12, color: "#9ca3af" }}>
-                        em {new Date(estudante.data_avaliacao).toLocaleDateString("pt-PT")}
-                      </span>
-                    )}
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "130px", textAlign: "center", color: "#6b7280" }}>
-                    <Clock size={32} color="#d1d5db" style={{ marginBottom: 8 }} />
-                    <p style={{ fontSize: 14 }}>Ainda não avaliado pelo<br />Superintendente de Circuito nesta turma.</p>
-                  </div>
-                )}
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "#6b7280" }}>Congregação</span>
+                  <span style={{ fontWeight: 600, color: "#111827", textAlign: "right" }}>{estudante?.congregacao_nome || "N/A"}<br/><span style={{ fontSize: 12, fontWeight: 400, color: "#9ca3af" }}>{estudante?.circuito_codigo ? `Circuito ${estudante.circuito_codigo}` : ""}</span></span>
+                </div>
               </div>
             </div>
 
@@ -439,7 +404,7 @@ export default function ConfirmacaoPublicaPage({
             </div>
 
             <div style={{ marginTop: 24, textAlign: "center", fontSize: 12, color: "#9ca3af" }}>
-              School-Lab · O seu acesso é seguro e pessoal
+              Escola para Anciãos de Congregação · O seu acesso é seguro e pessoal
             </div>
           </div>
         )}

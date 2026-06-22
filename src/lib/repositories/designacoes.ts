@@ -15,6 +15,14 @@ const COMPATIBILIDADE: Record<string, string[]> = {
   "C-": ["C"],
 };
 
+// Peso por nível: nível mais alto → valor mais NEGATIVO → score mais baixo → mais designações
+// (score mais baixo = preferência no algoritmo)
+const NIVEL_PESO: Record<string, number> = {
+  "A+": -40, "A": -35, "A-": -30,
+  "B+": -20, "B": -15, "B-": -10,
+  "C+":  -5, "C":   0, "C-":   5,
+};
+
 // -------------------------------------------------------
 // LISTAR DESIGNAÇÕES DE UMA TURMA
 // -------------------------------------------------------
@@ -123,15 +131,18 @@ export function gerarDesignacoes(turmaId: string, utilizadorId?: string): {
         }
 
         // Ordenar os compatíveis por:
-        // 1. Quem tem menos designações globais (Garante que TODOS participam)
-        // 2. Se for grupo, quem é da mesma congregação (Prioridade Forte)
-        // 3. Se for grupo, quem é do mesmo circuito / "congregação vizinha" (Prioridade Secundária)
+        // 1. NÍVEL (mais alto = score mais baixo = preferência) → garante A+ recebe mais
+        // 2. Menos designações globais (equilíbrio dentro do mesmo nível)
+        // 3. Se for grupo, quem é da mesma congregação (Prioridade Forte)
+        // 4. Se for grupo, quem é do mesmo circuito / "congregação vizinha" (Prioridade Secundária)
         compativeis.sort((a, b) => {
-          const scoreA = (desigGlobais.get(a.id) ?? 0) * 100 
+          const scoreA = (NIVEL_PESO[a.nivel_oratoria] ?? 0)
+                         + (desigGlobais.get(a.id) ?? 0) * 50
                          - (congreBase === a.congregacao_id ? 50 : 0)
                          - (circuitoBase && circuitoBase === a.circuito_id && congreBase !== a.congregacao_id ? 20 : 0);
           
-          const scoreB = (desigGlobais.get(b.id) ?? 0) * 100 
+          const scoreB = (NIVEL_PESO[b.nivel_oratoria] ?? 0)
+                         + (desigGlobais.get(b.id) ?? 0) * 50
                          - (congreBase === b.congregacao_id ? 50 : 0)
                          - (circuitoBase && circuitoBase === b.circuito_id && congreBase !== b.congregacao_id ? 20 : 0);
                          

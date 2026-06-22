@@ -3,6 +3,9 @@ import { obterTurmaEstudantePorToken, historicoEstudante } from "@/lib/repositor
 import { listarDesignacoesDoEstudante, confirmarDesignacao, recusarDesignacao } from "@/lib/repositories/designacoes";
 import getDb from "@/lib/db";
 
+// Campos confidenciais que o aluno NÃO deve ver
+const CAMPOS_CONFIDENCIAIS = ["idade", "anos_batismo", "nivel_oratoria", "avaliado_pelo_viajante", "data_avaliacao", "fotografia", "token_acesso"];
+
 // -------------------------------------------------------
 // GET /api/public/estudante/[token]
 // Valida o token e retorna os dados do estudante + designações
@@ -22,6 +25,20 @@ export async function GET(
       );
     }
 
+    // ── Verificar expiração: o link expira no 1º dia de aulas ──
+    if (estudante.data_inicio) {
+      const dataInicio = new Date(estudante.data_inicio);
+      // Considera expirado a partir do início do dia da data_inicio (00:00 hora local)
+      dataInicio.setHours(0, 0, 0, 0);
+      const agora = new Date();
+      if (agora >= dataInicio) {
+        return NextResponse.json(
+          { erro: "O seu acesso a este portal expirou. As aulas já tiveram início. Por favor, contacte os instrutores caso precise de informação adicional." },
+          { status: 410 }
+        );
+      }
+    }
+
     const db = getDb();
     const ipAddress = req.headers.get("x-forwarded-for")?.split(",")[0].trim()
       || req.headers.get("x-real-ip")
@@ -36,9 +53,15 @@ export async function GET(
     const designacoes = listarDesignacoesDoEstudante(estudante.id);
     const historico = historicoEstudante(estudante.estudante_id);
 
+    // Remover campos confidenciais antes de enviar
+    const estudanteSeguro = { ...estudante };
+    for (const campo of CAMPOS_CONFIDENCIAIS) {
+      delete estudanteSeguro[campo];
+    }
+
     return NextResponse.json({
       data: {
-        estudante,
+        estudante: estudanteSeguro,
         designacoes,
         historico
       },

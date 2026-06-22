@@ -71,7 +71,7 @@ export default function AvaliacaoViajantePage({ params }: { params: Promise<{ to
   );
 
   const { turma, estudantes } = dados;
-  const notas = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-"];
+  const notas = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "NR"];
   
   // Filtro de pesquisa
   const estudantesFiltrados = estudantes.filter((e: any) => 
@@ -111,8 +111,11 @@ export default function AvaliacaoViajantePage({ params }: { params: Promise<{ to
         
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 32 }}>
           <div style={{ flex: "1 1 300px", background: theme.cardBg, padding: "20px 24px", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
-            <p style={{ margin: 0, color: theme.textMuted, fontSize: 15, lineHeight: 1.6 }}>
-              As suas avaliações são guardadas automaticamente na base de dados do <strong>Escola EAC</strong>. Selecione a nota apropriada.
+            <p style={{ margin: "0 0 10px 0", color: theme.textMuted, fontSize: 15, lineHeight: 1.6 }}>
+              As suas avaliações são guardadas automaticamente na base de dados da <strong>Escola para Anciãos de Congregação</strong>. Selecione a nota apropriada.
+            </p>
+            <p style={{ margin: 0, color: darkMode ? "#38bdf8" : "#0284c7", fontSize: 14, lineHeight: 1.6, fontStyle: "italic", fontWeight: 500 }}>
+              Obs: sua avaliação não precisa ser a mesma que a do Congresso, podes apenas se basear no que observou a respeito deste irmão. Aqueles que estão limitados por questão de idade ou saúde, coloque NR.
             </p>
           </div>
           
@@ -163,7 +166,7 @@ export default function AvaliacaoViajantePage({ params }: { params: Promise<{ to
                 )}
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4, marginTop: "auto" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4, marginTop: "auto" }}>
                 {notas.map(nota => {
                   const isSelected = e.nivel_oratoria === nota;
                   return (
@@ -177,7 +180,7 @@ export default function AvaliacaoViajantePage({ params }: { params: Promise<{ to
                         color: isSelected ? "white" : theme.text,
                         border: "none",
                         fontWeight: isSelected ? 700 : 500,
-                        fontSize: 16,
+                        fontSize: 14,
                         cursor: "pointer",
                         transition: "all 0.1s",
                         opacity: (salvando === e.turma_estudante_id && isSelected) ? 0.7 : 1,

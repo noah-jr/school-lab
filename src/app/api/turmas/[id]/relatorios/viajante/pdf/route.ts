@@ -55,9 +55,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     // ── Cabeçalho ─────────────────────────────────────────────
     doc.setFillColor(30, 64, 175); doc.rect(0, 0, pageW, 70, "F");
     doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(147, 197, 253);
-    doc.text("SCHOOL-LAB ANGOLA", 40, 22);
+    doc.text("EAC", 40, 22);
     doc.setFontSize(14); doc.setTextColor(255, 255, 255);
-    doc.text("Escola para Anciãos e Servos Ministeriais", pageW / 2, 38, { align: "center" });
+    doc.text("Escola para Anciãos de Congregação", pageW / 2, 38, { align: "center" });
     doc.setFontSize(10); doc.setFont("helvetica", "normal");
     doc.text("Relatório de Avaliação para o Superintendente de Circuito", pageW / 2, 56, { align: "center" });
 
@@ -99,7 +99,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     doc.text(turma.instrutor_b_nome || "_________________", 435, endY + 26, { align: "center" });
 
     doc.setFontSize(7); doc.setTextColor(160, 160, 160);
-    doc.text(`Gerado em ${new Date().toLocaleString("pt-PT")} via School-Lab`, pageW / 2, endY + 48, { align: "center" });
+    doc.text(`Gerado em ${new Date().toLocaleString("pt-PT")} via EAC`, pageW / 2, endY + 48, { align: "center" });
 
     const arrayBuffer = doc.output("arraybuffer");
     return new NextResponse(arrayBuffer, {

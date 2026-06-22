@@ -290,7 +290,7 @@ export function Sidebar({ papel }: { papel?: string }) {
 
           {sidebarAberta && (
             <div className="text-xs text-faint" style={{ padding: "4px 10px", marginTop: 12 }}>
-              v0.1.0 — School-Lab Angola
+              v0.1.0 — EAC Angola
             </div>
           )}
         </div>

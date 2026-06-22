@@ -1,4 +1,3 @@
-import { Beaker } from "lucide-react";
 import React from "react";
 
 interface LogoProps {
@@ -36,16 +35,20 @@ export function Logo({ size = "md", showText = true, className = "", subtitle }:
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
-          borderRadius: size === "sm" ? "6px" : size === "md" ? "8px" : "12px",
-          color: "white",
-          boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)',
+          background: 'transparent',
+          borderRadius: "50%",
+          overflow: "hidden",
+          border: "none",
           transition: 'transform 0.2s ease-in-out',
         }}
-        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05) rotate(-5deg)'}
-        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1) rotate(0deg)'}
+        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
       >
-        <Beaker size={iconSizes[size]} strokeWidth={2.5} />
+        <img 
+          src="/logo.jpg" 
+          alt="EAC Logo" 
+          style={{ width: "100%", height: "100%", objectFit: "contain", padding: "2px" }} 
+        />
       </div>
       {showText && (
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
@@ -53,12 +56,12 @@ export function Logo({ size = "md", showText = true, className = "", subtitle }:
             fontSize: textSizes[size], 
             fontWeight: 800, 
             letterSpacing: '-0.03em',
-            background: 'linear-gradient(to right, #1e40af, #ea580c)',
+            background: 'linear-gradient(to right, #1e40af, #2563eb)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             lineHeight: 1.1
           }}>
-            School-Lab
+            Escola EAC
           </div>
           {subtitle && size !== "sm" && (
             <div style={{ 

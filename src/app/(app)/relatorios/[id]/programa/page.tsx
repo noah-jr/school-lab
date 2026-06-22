@@ -37,7 +37,7 @@ export default function RelatorioProgramaPage({ params }: { params: Promise<{ id
     <div style={{ padding: "0 24px" }}>
       
       {/* Botões do UI - Ocultos na impressão */}
-      <div className="no-print" style={{ marginBottom: "24px", display: "flex", gap: "12px", background: "var(--bg-surface)", padding: "16px", borderRadius: "8px", border: "1px solid var(--border)", alignItems: "center" }}>
+      <div className="no-print" style={{ marginBottom: "24px", display: "flex", flexWrap: "wrap", gap: "12px", background: "var(--bg-surface)", padding: "16px", borderRadius: "8px", border: "1px solid var(--border)", alignItems: "center" }}>
         <Link href="/relatorios" className="btn btn-ghost"><ArrowLeft size={16} /> Voltar</Link>
         <div style={{ flex: 1 }} />
         <span style={{ fontSize: "13px", color: "var(--text-muted)", marginRight: "12px" }}>
@@ -49,6 +49,9 @@ export default function RelatorioProgramaPage({ params }: { params: Promise<{ id
         <a href={`/api/turmas/${id}/relatorios/programa/pdf`} target="_blank" className="btn btn-primary" style={{ display: "flex", gap: "8px" }}>
           <Printer size={16} /> Exportar / Descarregar PDF
         </a>
+        <div style={{ width: "100%", textAlign: "center", fontSize: "13px", color: "#6b7280", marginTop: "4px" }}>
+          💡 <strong>Dica:</strong> Pode clicar em qualquer texto (tema, hora, nome, etc.) na folha abaixo para editá-lo diretamente antes de imprimir!
+        </div>
       </div>
 
       {/* Papel do Relatório A4 */}
@@ -56,13 +59,25 @@ export default function RelatorioProgramaPage({ params }: { params: Promise<{ id
         
         {/* Cabeçalho */}
         <div style={{ textAlign: "center", marginBottom: "32px", borderBottom: "2px solid #222", paddingBottom: "16px" }}>
-          <h1 style={{ fontSize: "22px", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 8px 0" }}>
+          <h1 
+            contentEditable={true} 
+            suppressContentEditableWarning={true}
+            style={{ fontSize: "22px", fontWeight: "bold", textTransform: "uppercase", margin: "0 0 8px 0", outline: "none" }}
+          >
             Programa da Escola
           </h1>
-          <h2 style={{ fontSize: "16px", fontWeight: "normal", margin: "0 0 4px 0" }}>
+          <h2 
+            contentEditable={true} 
+            suppressContentEditableWarning={true}
+            style={{ fontSize: "16px", fontWeight: "normal", margin: "0 0 4px 0", outline: "none" }}
+          >
             Turma {turma.numero_turma}ª - {turma.nome}
           </h2>
-          <p style={{ fontSize: "14px", margin: 0 }}>
+          <p 
+            contentEditable={true} 
+            suppressContentEditableWarning={true}
+            style={{ fontSize: "14px", margin: 0, outline: "none" }}
+          >
             {new Date(turma.data_inicio).toLocaleDateString("pt-PT")} a {new Date(turma.data_fim).toLocaleDateString("pt-PT")} | Local: {turma.local_nome}
           </p>
         </div>
@@ -75,7 +90,11 @@ export default function RelatorioProgramaPage({ params }: { params: Promise<{ id
 
           return (
             <div key={dia} style={{ marginBottom: "32px" }}>
-              <h3 style={{ fontSize: "15px", fontWeight: "bold", textTransform: "uppercase", borderBottom: "1px solid #ccc", paddingBottom: "4px", marginBottom: "12px" }}>
+              <h3 
+                contentEditable={true} 
+                suppressContentEditableWarning={true}
+                style={{ fontSize: "15px", fontWeight: "bold", textTransform: "uppercase", borderBottom: "1px solid #ccc", paddingBottom: "4px", marginBottom: "12px", outline: "none" }}
+              >
                 {nomesDias[dia]}
               </h3>
               
@@ -92,11 +111,11 @@ export default function RelatorioProgramaPage({ params }: { params: Promise<{ id
                 <tbody>
                   {partesDoDia.map(parte => (
                     <tr key={parte.id}>
-                      <td style={{ textAlign: "center" }}>{parte.hora_inicio || "—"}</td>
-                      <td style={{ textAlign: "center", fontWeight: "bold" }}>{parte.parte_numero}</td>
-                      <td>{parte.parte_titulo}</td>
-                      <td style={{ textTransform: "capitalize" }}>{parte.parte_tipo}</td>
-                      <td style={{ fontWeight: 600 }}>{parte.estudante_nome || "—"}</td>
+                      <td contentEditable={true} suppressContentEditableWarning={true} style={{ textAlign: "center", outline: "none" }}>{parte.hora_inicio || "—"}</td>
+                      <td contentEditable={true} suppressContentEditableWarning={true} style={{ textAlign: "center", fontWeight: "bold", outline: "none" }}>{parte.parte_numero}</td>
+                      <td contentEditable={true} suppressContentEditableWarning={true} style={{ outline: "none" }}>{parte.parte_titulo}</td>
+                      <td contentEditable={true} suppressContentEditableWarning={true} style={{ textTransform: "capitalize", outline: "none" }}>{parte.parte_tipo}</td>
+                      <td contentEditable={true} suppressContentEditableWarning={true} style={{ fontWeight: 600, outline: "none" }}>{parte.estudante_nome || "—"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -107,8 +126,8 @@ export default function RelatorioProgramaPage({ params }: { params: Promise<{ id
 
         {/* Instrutores */}
         <div style={{ marginTop: "40px", padding: "16px", border: "1px solid #ccc", background: "#fafafa" }}>
-          <p style={{ margin: "0 0 8px 0", fontSize: "14px" }}><strong>Instrutor Principal:</strong> {turma.instrutor_a_nome || "—"}</p>
-          <p style={{ margin: "0", fontSize: "14px" }}><strong>Instrutor Auxiliar:</strong> {turma.instrutor_b_nome || "—"}</p>
+          <p contentEditable={true} suppressContentEditableWarning={true} style={{ margin: "0 0 8px 0", fontSize: "14px", outline: "none" }}><strong>Instrutor Principal:</strong> {turma.instrutor_a_nome || "—"}</p>
+          <p contentEditable={true} suppressContentEditableWarning={true} style={{ margin: "0", fontSize: "14px", outline: "none" }}><strong>Instrutor Auxiliar:</strong> {turma.instrutor_b_nome || "—"}</p>
         </div>
 
       </div>

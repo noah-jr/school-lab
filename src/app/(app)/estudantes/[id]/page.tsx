@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/layout/Sidebar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import type { Estudante } from "@/lib/types";
-import { UserCircle, BookOpen, Clock, Edit2, PowerOff, Trash2, Mail, FileUp, FileText, Download, X, Send } from "lucide-react";
+import { UserCircle, BookOpen, Clock, Edit2, PowerOff, Trash2, Mail, FileUp, FileText, Download, X, Send, Printer } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,8 +24,8 @@ export default function EstudanteDetailPage({ params }: { params: Promise<{ id: 
   const [formData, setFormData] = useState<any>({});
   
   // Estados para o formulário de notificação
-  const [notifAssunto, setNotifAssunto] = useState("Atualização da Ficha de Estudante");
-  const [notifMensagem, setNotifMensagem] = useState("Olá, por favor reveja a sua ficha de estudante e traga o manual de oratória na próxima aula.");
+  const [notifAssunto, setNotifAssunto] = useState("Designações / Informação da Escola");
+  const [notifMensagem, setNotifMensagem] = useState("Olá. Por favor, aceda ao seu link pessoal para consultar as suas designações e detalhes sobre as aulas.");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -245,6 +245,7 @@ export default function EstudanteDetailPage({ params }: { params: Promise<{ id: 
             <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid var(--border)", display: "flex", gap: 12, flexWrap: "wrap" }}>
               <button className="btn btn-outline" onClick={iniciarEdicao}><Edit2 size={16} /> Editar Perfil</button>
               <button className="btn btn-outline" onClick={() => setNotificando(true)}><Mail size={16} /> Notificar</button>
+              <Link href={`/estudantes/${id}/ficha/imprimir`} className="btn btn-outline"><Printer size={16} /> Imprimir Ficha</Link>
               <Link href={`/preview-pdf?url=/api/estudantes/${id}/ficha/pdf&title=Ficha%20de%20Estudante&back=/estudantes/${id}`} className="btn btn-outline"><FileText size={16} /> Exportar Ficha</Link>
               <div style={{ flex: 1 }} />
               <button className="btn btn-ghost" style={{ color: estudante.activo ? "var(--danger)" : "var(--success)" }} onClick={toggleAtivo}>

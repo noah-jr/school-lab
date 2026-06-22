@@ -157,14 +157,14 @@ export default function LandingPage() {
             {/* Hero Text */}
             <div className="hero-text-col">
               <div className="badge">
-                <span className="badge-dot"></span> School-Lab v0.1.0
+                <span className="badge-dot"></span> EAC v0.1.0
               </div>
               <h1 className="hero-title">
                 Gestão Institucional <br />
                 <span className="text-gray">Simplificada.</span>
               </h1>
               <p className="hero-desc">
-                Automatize a designação de oradores para a Escola de Anciãos. 
+                Automatize a designação de oradores para a Escola para Anciãos de Congregação. 
                 Regras precisas, zero conflitos de horário e agrupamento inteligente.
               </p>
               
@@ -208,7 +208,7 @@ export default function LandingPage() {
                     <span className="mac-dot yellow"></span>
                     <span className="mac-dot green"></span>
                   </div>
-                  <div className="mockup-url">app.school-lab.ao</div>
+                  <div className="mockup-url">eac.ao</div>
                 </div>
                 <div className="mockup-body">
                   <div className="mockup-sidebar">
@@ -294,7 +294,7 @@ export default function LandingPage() {
               </div>
               <h2>Solicitação & Suporte</h2>
               <p>
-                Utilize este canal para comunicar com a administração da plataforma <strong>School-Lab</strong>. 
+                Utilize este canal para comunicar com a administração da plataforma <strong>Escola para Anciãos de Congregação</strong>. 
                 As solicitações de suporte, sugestões de novos recursos ou relatos de anomalias no motor de designações são analisadas com máxima prioridade.
               </p>
               <div className="contact-info-list">
@@ -412,13 +412,13 @@ export default function LandingPage() {
             </div>
             <div className="footer-contact-col">
               <h4>Contacto</h4>
-              <p>Email: suporte@school-lab.ao</p>
+              <p>Email: suporte-eac@jwpub.org</p>
               <p>Localização: Luanda, Angola</p>
             </div>
           </div>
           <div className="footer-bottom">
             <span className="footer-text">
-              @ {new Date().getFullYear()} School-Lab Angola. Todos os direitos reservados.
+              @ {new Date().getFullYear()} Escola para Anciãos de Congregação. Todos os direitos reservados.
             </span>
             <span className="footer-credit">
               Desenvolvido por <strong>VATECH INTERPRISES</strong>

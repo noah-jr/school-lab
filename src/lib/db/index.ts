@@ -169,7 +169,7 @@ const remoteDb = {
   }
 };
 
-// Instância singleton da DB
+// Instância singleton da base de dados (EAC - EAC-Standard)
 let _db: any = null;
 let _migrationsRun = false;
 

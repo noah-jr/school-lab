@@ -3,8 +3,9 @@ import { use } from "react";
 import { PageHeader } from "@/components/layout/Sidebar";
 import { useTurmaDesignacoes, useTurma, useGerarDesignacoes, useTurmaEstudantes, useAtribuirDesignacao } from "@/hooks/useTurmas";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/components/ui/Toast";
 import Link from "next/link";
-import { ClipboardList, Zap, ShieldAlert, Printer } from "lucide-react";
+import { ClipboardList, Zap, ShieldAlert, Printer, Copy } from "lucide-react";
 
 const DIAS_DA_SEMANA = ["segunda", "terca", "quarta", "quinta", "sexta"];
 
@@ -18,6 +19,47 @@ export default function TurmaDesignacoesPage({ params }: { params: Promise<{ id:
   const { mutateAsync: atribuir, isPending: atribuindo } = useAtribuirDesignacao(id);
 
   const temAcessoCompleto = user?.papel === "admin" || user?.papel === "instrutor";
+  const toast = useToast();
+
+  const copiarParaGoogleDocs = () => {
+    if (!designacoes || designacoes.length === 0) {
+      toast.erro("Nenhuma designação disponível para copiar.");
+      return;
+    }
+
+    let texto = `ESCOLA PARA ANCIÃOS DE CONGREGAÇÃO\n`;
+    texto += `Programa de Designações - Turma: ${turma?.nome || ""}\n\n`;
+
+    DIAS_DA_SEMANA.forEach((dia) => {
+      const partesDoDia = designacoes.filter((d) => d.dia_semana === dia) || [];
+      if (partesDoDia.length === 0) return;
+
+      texto += `--- ${dia.toUpperCase()} ---\n`;
+      partesDoDia.forEach((d: any) => {
+        const hora = d.hora_inicio ?? "--:--";
+        const duracao = d.duracao_minutos ? `(${d.duracao_minutos} min)` : "";
+        const titulo = d.titulo ?? "";
+        const tipo = d.tipo ?? "";
+        
+        // Obter estudante designado
+        const estudanteId = d.turma_estudante_id;
+        const est = estudantes?.find(e => e.id === estudanteId);
+        const estudanteNome = est ? est.estudante_nome : "Por atribuir";
+        
+        texto += `${hora} - ${titulo} ${duracao}\n`;
+        texto += `   Designado: ${estudanteNome} [${tipo}]\n\n`;
+      });
+      texto += `\n`;
+    });
+
+    navigator.clipboard.writeText(texto)
+      .then(() => {
+        toast.sucesso("Texto copiado! Pode colá-lo no Google Docs para editar.");
+      })
+      .catch(() => {
+        toast.erro("Erro ao copiar o texto.");
+      });
+  };
 
   if (!authLoading && !temAcessoCompleto && user?.papel !== "viajante") {
     return (
@@ -57,6 +99,12 @@ export default function TurmaDesignacoesPage({ params }: { params: Promise<{ id:
         ]}
         actions={
           <div className="flex gap-2">
+            <button onClick={copiarParaGoogleDocs} className="btn btn-ghost">
+              <Copy size={16} /> Copiar p/ Google Docs
+            </button>
+            <Link href={`/turmas/${id}/designacoes/imprimir`} className="btn btn-ghost">
+              <Printer size={16} /> Imprimir Folhas
+            </Link>
             <Link href={`/preview-pdf?url=/api/turmas/${id}/relatorios/designacoes/pdf&title=Designa%C3%A7%C3%B5es%20da%20Turma&back=/turmas/${id}/designacoes`} className="btn btn-ghost">
               <Printer size={16} /> Exportar PDF
             </Link>

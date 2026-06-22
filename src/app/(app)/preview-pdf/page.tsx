@@ -1,8 +1,28 @@
 "use client";
 import { PageHeader } from "@/components/layout/Sidebar";
 import { useSearchParams } from "next/navigation";
-import { Download, Printer, FileText, AlertCircle, Loader } from "lucide-react";
+import { Download, Printer, FileText, AlertCircle, Loader, Edit2 } from "lucide-react";
 import { Suspense, useState } from "react";
+
+const getEditUrl = (url: string) => {
+  // 1. Relatório Viajante
+  let match = url.match(/\/api\/turmas\/([^\/]+)\/relatorios\/viajante\/pdf/);
+  if (match) return `/relatorios/${match[1]}/viajante`;
+
+  // 2. Relatório Programa
+  match = url.match(/\/api\/turmas\/([^\/]+)\/relatorios\/programa\/pdf/);
+  if (match) return `/relatorios/${match[1]}/programa`;
+
+  // 3. Designações
+  match = url.match(/\/api\/turmas\/([^\/]+)\/relatorios\/designacoes\/pdf/);
+  if (match) return `/turmas/${match[1]}/designacoes/imprimir`;
+
+  // 4. Ficha do Estudante
+  match = url.match(/\/api\/estudantes\/([^\/]+)\/ficha\/pdf/);
+  if (match) return `/estudantes/${match[1]}/ficha/imprimir`;
+
+  return null;
+};
 
 function PdfViewerContent() {
   const searchParams = useSearchParams();
@@ -17,6 +37,7 @@ function PdfViewerContent() {
     return <div style={{ padding: 32 }}>Nenhum documento especificado.</div>;
   }
 
+  const editUrl = getEditUrl(pdfUrl);
   const nomeArquivo = titulo.replace(/\s+/g, "_") + ".pdf";
 
   const handleImprimir = () => {
@@ -47,6 +68,11 @@ function PdfViewerContent() {
         breadcrumb={[{ label: "Voltar", href: voltarPara }, { label: "Pré-visualização" }]}
         actions={
           <div style={{ display: "flex", gap: 12 }}>
+            {editUrl && (
+              <a href={editUrl} className="btn btn-outline" style={{ display: "flex", gap: 8 }}>
+                <Edit2 size={16} /> Editar / Personalizar
+              </a>
+            )}
             <button
               className="btn btn-outline"
               onClick={handleBaixar}

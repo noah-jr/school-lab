@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { v4 as uuidv4 } from "uuid";
+import { enviarEmail } from "@/lib/mail";
 
 export interface OTP {
   id: string;
@@ -27,7 +28,15 @@ export const otpRepository = {
 
     stmt.run(id, email, codigo, proposito, expira_em);
 
-    // TODO: Num ambiente real, integraria com o Nodemailer, SendGrid, Resend, etc.
+    // Enviar por e-mail real em segundo plano utilizando o serviço SMTP
+    enviarEmail(
+      email,
+      `Código de Segurança - EAC`,
+      `O seu código de verificação de uso único (OTP) para ${proposito} na Escola para Anciãos de Congregação é: ${codigo}\n\nEste código expira em 15 minutos.`
+    ).catch(err => {
+      console.error("[MAIL ERROR] Falha ao enviar código OTP:", err);
+    });
+
     console.log(`\n\n=== MENSAGEM DO SISTEMA ===\nEmail: ${email}\nProposito: ${proposito}\nO SEU CÓDIGO OTP É: ${codigo}\n===========================\n\n`);
 
     return codigo;

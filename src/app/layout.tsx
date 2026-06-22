@@ -5,22 +5,21 @@ import { CookieConsent } from "@/components/ui/CookieConsent";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://school-lab.ao"),
+  metadataBase: new URL("https://eac.ao"),
   title: {
-    template: "%s — School-Lab",
-    default: "School-Lab — Gestão Institucional & Oratória (Angola)",
+    template: "%s — EAC",
+    default: "Escola para Anciãos de Congregação — Gestão & Oratória",
   },
-  description: "Plataforma avançada de alta fidelidade para automação de designações de oratória, gestão descentralizada de turmas e relatórios institucionais.",
-  applicationName: "School-Lab",
+  description: "Plataforma avançada para automação de designações de oratória, gestão descentralizada de turmas e relatórios institucionais.",
+  applicationName: "EAC",
   keywords: [
-    "School-Lab",
-    "Gestão Escolar",
+    "EAC",
+    "Gestão de Escolas",
     "Designações de Oratória",
     "Controlo de Discursos",
-    "Escola de Anciãos",
+    "Escola para Anciãos de Congregação",
     "Angola",
     "Automação",
-    "Base de Dados Descentralizada",
     "SQLite"
   ],
   authors: [{ name: "VATECH INTERPRISES" }],
@@ -37,16 +36,16 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "School-Lab — Gestão Institucional & Oratória",
+    title: "EAC — Gestão de Escola para Anciãos de Congregação",
     description: "Plataforma avançada para automação de designações de oratória, gestão descentralizada de turmas e relatórios de progresso em Angola.",
-    url: "https://school-lab.ao",
-    siteName: "School-Lab",
+    url: "https://eac.ao",
+    siteName: "EAC",
     locale: "pt_AO",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "School-Lab — Gestão Institucional & Oratória",
+    title: "EAC — Gestão de Escola para Anciãos de Congregação",
     description: "Plataforma avançada para automação de designações de oratória e gestão de turmas.",
   },
   robots: {

@@ -8,32 +8,10 @@ import api from "@/lib/axios";
 export default function RecuperarPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  
-  // Fase 1: Pedir email
   const [email, setEmail] = useState("");
-  const [codigoEnviado, setCodigoEnviado] = useState(false);
-  
-  // Fase 2: Validar OTP e Nova Password
-  const [codigo, setCodigo] = useState("");
   const [novaPassword, setNovaPassword] = useState("");
-  
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
-
-  const handlePedirOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setErro("");
-    try {
-      const res = await api.post("/auth/recuperar", { email });
-      setCodigoEnviado(true);
-      setSucesso(res.data.mensagem);
-    } catch (err: any) {
-      setErro(err.response?.data?.erro || "Erro ao pedir recuperação.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleRedefinir = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +19,7 @@ export default function RecuperarPage() {
     setErro("");
     setSucesso("");
     try {
-      const res = await api.post("/auth/reset", { email, codigo, novaPassword });
+      const res = await api.post("/auth/reset", { email, novaPassword });
       setSucesso(res.data.mensagem);
       setTimeout(() => {
         router.push("/login");
@@ -62,7 +40,7 @@ export default function RecuperarPage() {
         <div className="auth-header">
           <div className="auth-icon"><KeyRound size={20} color="var(--accent)" /></div>
           <h1 className="auth-title">Recuperação de Acesso</h1>
-          <p className="auth-subtitle">Restabeleça a sua password via OTP</p>
+          <p className="auth-subtitle">Restabeleça a sua password diretamente</p>
         </div>
 
         {erro && (
@@ -71,85 +49,49 @@ export default function RecuperarPage() {
           </div>
         )}
 
-        {sucesso && !codigoEnviado && (
+        {sucesso && (
           <div style={{ backgroundColor: "rgba(16,185,129,0.1)", color: "var(--success)", padding: "10px 14px", borderRadius: "8px", fontSize: "13px", marginBottom: "20px", border: "1px solid rgba(16,185,129,0.2)" }}>
             {sucesso}
           </div>
         )}
 
-        {!codigoEnviado ? (
-          <form onSubmit={handlePedirOTP} className="auth-form">
-            <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "8px", lineHeight: 1.5 }}>
-              Introduza o endereço de correio eletrónico associado à sua conta. Enviaremos um código temporário de 6 dígitos para o ajudar a redefinir a sua senha.
-            </p>
-            <div className="form-group" style={{ marginBottom: "24px" }}>
-              <label className="form-label">Email Institucional</label>
-              <input 
-                type="email" 
-                className="form-input" 
-                placeholder="exemplo@jwpub.org" 
-                required 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ padding: "12px 14px", fontSize: "14px" }}
-              />
-            </div>
+        <form onSubmit={handleRedefinir} className="auth-form">
+          <div className="form-group">
+            <label className="form-label">Email Institucional</label>
+            <input 
+              type="email" 
+              className="form-input" 
+              placeholder="exemplo@jwpub.org" 
+              required 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={{ padding: "12px 14px", fontSize: "14px" }}
+            />
+          </div>
 
-            <button 
-              type="submit" 
-              className={`btn btn-primary w-full ${loading ? "btn-loading" : ""}`}
-              style={{ padding: "12px", fontSize: "15px", justifyContent: "center", borderRadius: "8px" }}
-              disabled={loading}
-            >
-              {loading ? "A verificar..." : "Pedir Código OTP"} <ArrowRight size={16} />
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleRedefinir} className="auth-form">
-            <div style={{ backgroundColor: "var(--bg-elevated)", padding: "12px 16px", borderRadius: "6px", marginBottom: "16px", border: "1px dashed var(--border)" }}>
-              <span style={{ fontSize: "12px", color: "var(--text-faint)", textTransform: "uppercase", fontWeight: 600 }}>Email Alvo</span>
-              <div style={{ fontSize: "14px", color: "var(--text)", fontWeight: 500, marginTop: "4px" }}>{email}</div>
-            </div>
+          <div className="form-group" style={{ marginBottom: "24px" }}>
+            <label className="form-label">Nova Palavra-passe</label>
+            <input 
+              type="password" 
+              className="form-input" 
+              placeholder="••••••••" 
+              required 
+              minLength={6}
+              value={novaPassword}
+              onChange={(e) => setNovaPassword(e.target.value)}
+              style={{ padding: "12px 14px", fontSize: "14px" }}
+            />
+          </div>
 
-            <div className="form-group">
-              <label className="form-label">Código OTP (6 dígitos)</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                placeholder="000000" 
-                required 
-                maxLength={6}
-                value={codigo}
-                onChange={(e) => setCodigo(e.target.value.replace(/[^0-9]/g, ''))}
-                style={{ padding: "12px 14px", fontSize: "18px", letterSpacing: "0.2em", textAlign: "center", fontFamily: "var(--font-mono)" }}
-              />
-            </div>
-
-            <div className="form-group" style={{ marginBottom: "24px" }}>
-              <label className="form-label">Nova Palavra-passe</label>
-              <input 
-                type="password" 
-                className="form-input" 
-                placeholder="••••••••" 
-                required 
-                minLength={6}
-                value={novaPassword}
-                onChange={(e) => setNovaPassword(e.target.value)}
-                style={{ padding: "12px 14px", fontSize: "14px" }}
-              />
-            </div>
-
-            <button 
-              type="submit" 
-              className={`btn btn-primary w-full ${loading ? "btn-loading" : ""}`}
-              style={{ padding: "12px", fontSize: "15px", justifyContent: "center", borderRadius: "8px", background: "var(--success)" }}
-              disabled={loading}
-            >
-              {loading ? "A validar..." : "Atualizar Palavra-passe"} <KeyRound size={16} />
-            </button>
-            {sucesso && <div style={{ textAlign: "center", color: "var(--success)", fontSize: "13px", marginTop: "12px", fontWeight: 500 }}>{sucesso}</div>}
-          </form>
-        )}
+          <button 
+            type="submit" 
+            className={`btn btn-primary w-full ${loading ? "btn-loading" : ""}`}
+            style={{ padding: "12px", fontSize: "15px", justifyContent: "center", borderRadius: "8px", background: "var(--success)" }}
+            disabled={loading}
+          >
+            {loading ? "A atualizar..." : "Atualizar Palavra-passe"} <KeyRound size={16} />
+          </button>
+        </form>
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `

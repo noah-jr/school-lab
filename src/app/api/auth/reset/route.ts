@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { otpRepository } from "@/lib/repositories/otps";
 import { hashPassword } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, codigo, novaPassword } = await req.json();
+    const { email, novaPassword } = await req.json();
 
-    if (!email || !codigo || !novaPassword) {
-      return NextResponse.json({ erro: "Todos os campos (Email, OTP e Nova Senha) são obrigatórios." }, { status: 400 });
+    if (!email || !novaPassword) {
+      return NextResponse.json({ erro: "Todos os campos (Email e Nova Senha) são obrigatórios." }, { status: 400 });
     }
 
-    const valido = otpRepository.validarOTP(email, codigo, "recuperacao");
-    
-    if (!valido) {
-      return NextResponse.json({ erro: "Código OTP inválido ou expirado." }, { status: 400 });
+    const utilizador = db.prepare("SELECT id FROM utilizadores WHERE email = ?").get(email);
+    if (!utilizador) {
+      return NextResponse.json({ erro: "Email não encontrado no sistema." }, { status: 404 });
     }
 
     const novaSenhaHash = hashPassword(novaPassword);

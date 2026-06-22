@@ -69,7 +69,7 @@ export default function SobrePage() {
             marginBottom: "16px",
             color: "var(--text)"
           }}>
-            Sobre o School-Lab
+            Sobre a Escola para Anciãos de Congregação
           </h1>
           <p style={{
             fontSize: "15px",
@@ -199,7 +199,7 @@ export default function SobrePage() {
           <p style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", margin: "0 0 8px 0" }}>
             Desenvolvido com <Heart size={12} color="var(--danger)" /> para gestão educacional.
           </p>
-          <p style={{ margin: 0 }}>© {new Date().getFullYear()} School-Lab. Todos os direitos reservados.</p>
+          <p style={{ margin: 0 }}>© {new Date().getFullYear()} Escola para Anciãos de Congregação. Todos os direitos reservados.</p>
         </footer>
 
       </div>

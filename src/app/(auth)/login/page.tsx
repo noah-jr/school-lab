@@ -91,7 +91,7 @@ export default function LoginPage() {
           </div>
 
           <div className="auth-sidebar-footer">
-            <span>© {new Date().getFullYear()} School-Lab. Todos os direitos reservados.</span>
+            <span>© {new Date().getFullYear()} Escola para Anciãos de Congregação. Todos os direitos reservados.</span>
             <span style={{ display: "block", marginTop: "4px" }}>
               Desenvolvimento por <strong>VA TECH INTERPRISES</strong>
             </span>
@@ -125,7 +125,7 @@ export default function LoginPage() {
                   <input 
                     type="email" 
                     className="form-input" 
-                    placeholder="exemplo@school-lab.ao" 
+                    placeholder="exemplo@jwpub.org" 
                     required 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -199,7 +199,7 @@ export default function LoginPage() {
             <p>Este é um portal privado de acesso regulado. Todo o tráfego é auditado.</p>
           </div>
           <div className="auth-mobile-footer">
-            <span>© {new Date().getFullYear()} School-Lab</span>
+            <span>© {new Date().getFullYear()} Escola para Anciãos de Congregação</span>
             <span style={{ margin: "0 8px", opacity: 0.5 }}>•</span>
             <span>Desenvolvimento por <strong>VA TECH INTERPRISES</strong></span>
           </div>

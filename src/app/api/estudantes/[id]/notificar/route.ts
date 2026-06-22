@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import getDb from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { criarAuditLog } from "@/lib/db/audit";
+import { enviarEmail } from "@/lib/mail";
 
 export async function POST(
   req: NextRequest,
@@ -28,13 +29,20 @@ export async function POST(
       return NextResponse.json({ erro: "Estudante não encontrado" }, { status: 404 });
     }
 
+    if (!estudante.email_jwpub) {
+      return NextResponse.json({ erro: "Estudante não tem endereço de e-mail JWPub configurado" }, { status: 400 });
+    }
+
+    // Enviar o e-mail real utilizando o serviço SMTP
+    await enviarEmail(estudante.email_jwpub, assunto, conteudo);
+
     // Criar o log no banco
     db.prepare(`
       INSERT INTO logs (acao, detalhe, severidade, utilizador_id)
       VALUES (?, ?, ?, ?)
     `).run(
       "Notificação Enviada",
-      `Notificação enviada para ${estudante.nome} (${estudante.email_jwpub || 'Sem E-mail'}). Assunto: "${assunto}"`,
+      `Notificação enviada por e-mail para ${estudante.nome} (${estudante.email_jwpub}). Assunto: "${assunto}"`,
       "info",
       session.id
     );
@@ -42,6 +50,6 @@ export async function POST(
     return NextResponse.json({ mensagem: "Notificação enviada e registada com sucesso." });
   } catch (err: any) {
     console.error("[POST /api/estudantes/[id]/notificar]", err);
-    return NextResponse.json({ erro: "Erro ao enviar notificação" }, { status: 500 });
+    return NextResponse.json({ erro: err?.message || "Erro ao enviar notificação" }, { status: 500 });
   }
 }

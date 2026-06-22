@@ -18,7 +18,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     // ── Cabeçalho ──────────────────────────────────────────────
     doc.setFillColor(30, 64, 175); doc.rect(0, 0, pageW, 65, "F");
     doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(147, 197, 253);
-    doc.text("SCHOOL-LAB ANGOLA", 20, 20);
+    doc.text("EAC", 20, 20);
     doc.setFontSize(18); doc.setTextColor(255, 255, 255);
     doc.text("Ficha do Estudante", pageW / 2, 40, { align: "center" });
     doc.setFontSize(10); doc.setFont("helvetica", "normal");
@@ -105,7 +105,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     }
 
     doc.setFontSize(7); doc.setTextColor(160, 160, 160);
-    doc.text(`Gerado em ${new Date().toLocaleString("pt-PT")} via School-Lab`, pageW / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
+    doc.text(`Gerado em ${new Date().toLocaleString("pt-PT")} via EAC`, pageW / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
 
     const pdfBuffer = doc.output("arraybuffer");
 

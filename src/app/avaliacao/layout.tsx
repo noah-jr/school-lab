@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Avaliação de Estudantes — School-Lab",
+  title: "Avaliação de Estudantes — Escola para Anciãos de Congregação",
   description: "Formulário de avaliação institucional.",
 };
 

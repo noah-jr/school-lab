@@ -55,7 +55,7 @@ export default function ConfiguracoesPage() {
           <div className="card" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px" }}>
             <div className="form-group">
               <label className="form-label">Nome da Instituição</label>
-              <input className="form-input" defaultValue="Escola para Anciãos e Servos Ministeriais" disabled={!isAdmin} />
+              <input className="form-input" defaultValue="Escola para Anciãos de Congregação" disabled={!isAdmin} />
             </div>
             <div className="form-group">
               <label className="form-label">Fuso Horário Principal</label>
@@ -75,7 +75,7 @@ export default function ConfiguracoesPage() {
             </div>
             <div className="form-group">
               <label className="form-label">Email de Suporte (Remetente)</label>
-              <input type="email" className="form-input" defaultValue="no-reply@school-lab.ao" disabled={!isAdmin} />
+              <input type="email" className="form-input" defaultValue="no-reply@jwpub.org" disabled={!isAdmin} />
             </div>
           </div>
         </section>

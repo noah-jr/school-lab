@@ -84,7 +84,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     doc.rect(0, 0, pageW, 70, "F");
 
     doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(147, 197, 253);
-    doc.text("SCHOOL-LAB ANGOLA", 40, 22);
+    doc.text("EAC", 40, 22);
 
     doc.setFontSize(17); doc.setTextColor(255, 255, 255);
     doc.text("Programa da Escola", pageW / 2, 40, { align: "center" });
@@ -146,7 +146,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     doc.setFont("helvetica", "normal"); doc.text(turma.instrutor_b_nome || "—", 165, startY + 31);
 
     doc.setFontSize(7); doc.setTextColor(160, 160, 160);
-    doc.text(`Gerado em ${new Date().toLocaleString("pt-PT")} via School-Lab`, pageW / 2, startY + 56, { align: "center" });
+    doc.text(`Gerado em ${new Date().toLocaleString("pt-PT")} via EAC`, pageW / 2, startY + 56, { align: "center" });
 
     const arrayBuffer = doc.output("arraybuffer");
     return new NextResponse(arrayBuffer, {
